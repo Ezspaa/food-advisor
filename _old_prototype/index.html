@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Food Advisor - Find Best Restaurants</title>
+    <link rel="stylesheet" href="style.css">
+    <!-- Подключаем jQuery, так как это требуется в задании -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+<body>
+    <!-- Навигация -->
+    <header class="navbar">
+        <div class="container">
+            <h1 class="logo">🍽️ Food Advisor</h1>
+            <nav>
+                <ul class="nav-links">
+                    <li><a href="#">Home</a></li>
+                    <li><a href="#">Restaurants</a></li>
+                    <li><a href="#" class="btn-login">Login</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Главный баннер с поиском -->
+    <section class="hero">
+        <div class="hero-content">
+            <h2>Discover the Best Food & Drinks</h2>
+            <p>Find top-rated restaurants, cafes, and bars near you.</p>
+            <div class="search-box">
+                <input type="text" id="searchInput" placeholder="Search for cuisine, restaurant, or location...">
+                <button id="searchBtn">Search</button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Секция популярных ресторанов -->
+    <main class="container">
+        <h3 class="section-title">Popular Restaurants</h3>
+        <div class="restaurant-grid" id="restaurantContainer">
+            <!-- Сюда с помощью JavaScript будут добавляться карточки ресторанов из базы данных -->
+            <div class="card">
+                <img src="https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=500&q=60" alt="Restaurant">
+                <div class="card-content">
+                    <h4>The Gourmet Kitchen</h4>
+                    <p class="cuisine">Italian • $$$</p>
+                    <p class="rating">⭐ 4.8 (120 reviews)</p>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script src="script.js"></script>
+</body>
+</html>
