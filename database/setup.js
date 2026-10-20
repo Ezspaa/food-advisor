@@ -9,6 +9,7 @@ const path = require('path');
 const mysql = require('mysql2/promise');
 const config = require('../config');
 const { hashPassword } = require('../server/utils/password');
+const NUTRITION = require('./nutrition');
 
 const DEMO_PASSWORD = 'Password123';
 const img = (id, w = 900) => `https://images.unsplash.com/photo-${id}?auto=format&fit=crop&w=${w}&q=70`;
@@ -295,9 +296,11 @@ async function setupDatabase() {
     );
     for (const [dName, category, dPrice, veg, spicy, dImg, dDesc] of dishes) {
       await insert(
-        `INSERT INTO dishes (restaurant_id, name, description, category, price, image_url, is_vegetarian, is_spicy, is_available)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-        [id, dName, dDesc, category, dPrice, dImg ? img(dImg, 600) : null, veg, spicy, rand() > 0.06 ? 1 : 0]
+        `INSERT INTO dishes (restaurant_id, name, description, category, price, image_url, is_vegetarian, is_spicy, is_available,
+                             weight_g, calories, protein_g, fat_g, carbs_g, allergens, recommended_for)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        [id, dName, dDesc, category, dPrice, dImg ? img(dImg, 600) : null, veg, spicy, rand() > 0.06 ? 1 : 0,
+          ...(NUTRITION[dName] || [null, null, null, null, null, '', ''])]
       );
     }
     restaurants.push({ id, key, name, city, quality, status, dishes: dishes.map((d) => d[0]).filter((_, j) => dishes[j][1] === 'Mains' || dishes[j][1] === 'Starters') });
@@ -365,6 +368,15 @@ async function setupDatabase() {
   const fair = reviewIds.find((x) => x.author === 'dana');
   await conn.query(`INSERT IGNORE INTO review_reports (review_id, reporter_id, reason, details, created_at) VALUES (?, ?, 'off-topic', 'I do not agree with this review.', ?)`,
     [fair.id, userId.yerlan, daysAgo(3)]);
+
+  // Site feedback examples (admin → Feedback)
+  await conn.query(
+    `INSERT INTO feedback (user_id, rating, category, message, page, device, status, created_at) VALUES
+       (?, 5, 'design', 'Very clean design, the dark mode looks great on my phone.', '/', 'mobile', 'read', ?),
+       (?, 4, 'idea', 'Would be nice to filter dishes by calories for my diet.', '/restaurants?mode=dishes', 'desktop', 'new', ?),
+       (NULL, 3, 'usability', 'It took me a while to find where to write a review.', '/restaurant?id=2', 'mobile', 'new', ?)`,
+    [userId.dana, daysAgo(6), userId.alikhan, daysAgo(2), daysAgo(1)]
+  );
 
   // Favourites
   const approved = restaurants.filter((r) => r.status === 'approved');

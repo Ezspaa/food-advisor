@@ -149,6 +149,7 @@
     const cats = ['Starters', 'Mains', 'Sides', 'Desserts', 'Drinks'].map((c) => `<option ${d.category === c ? 'selected' : ''}>${c}</option>`).join('');
     FA.modal({
       title: dish ? 'Edit dish' : 'Add a dish',
+      size: 'modal-lg',
       submitText: dish ? 'Save changes' : 'Add to menu',
       body: `
         <div class="field"><label for="df-name">Dish name <span class="req">*</span></label>
@@ -163,13 +164,33 @@
           <div class="char-count">${(d.description || '').length} / 400</div></div>
         <div class="field"><label for="df-img">Photo URL</label>
           <input class="input" type="url" id="df-img" name="image_url" maxlength="500" placeholder="https://" value="${FA.esc(d.image_url || '')}"></div>
+        <div class="form-section-title">Nutrition facts (per portion, optional)</div>
+        <div class="form-row">
+          <div class="field"><label for="df-weight">Portion weight (g)</label><input class="input" type="number" id="df-weight" name="weight_g" min="1" max="5000" step="1" value="${d.weight_g ?? ''}"></div>
+          <div class="field"><label for="df-kcal">Calories (kcal)</label><input class="input" type="number" id="df-kcal" name="calories" min="0" max="10000" step="1" value="${d.calories ?? ''}"></div>
+        </div>
+        <div class="form-row-3">
+          <div class="field"><label for="df-p">Protein (g)</label><input class="input" type="number" id="df-p" name="protein_g" min="0" max="1000" step="0.1" value="${d.protein_g ?? ''}"></div>
+          <div class="field"><label for="df-f">Fat (g)</label><input class="input" type="number" id="df-f" name="fat_g" min="0" max="1000" step="0.1" value="${d.fat_g ?? ''}"></div>
+          <div class="field"><label for="df-c">Carbs (g)</label><input class="input" type="number" id="df-c" name="carbs_g" min="0" max="1000" step="0.1" value="${d.carbs_g ?? ''}"></div>
+        </div>
+        <div class="field"><span class="field-label">Contains allergens</span>
+          <div class="check-grid">${Object.entries(FA.ALLERGEN).map(([k, l]) => `<label class="check"><input type="checkbox" name="allergens" value="${k}" data-multi ${String(d.allergens || '').split(',').includes(k) ? 'checked' : ''}> ${l}</label>`).join('')}</div></div>
+        <div class="field"><span class="field-label">Recommended for</span>
+          <div class="check-grid">${Object.entries(FA.AUDIENCE).map(([k, [e, l]]) => `<label class="check"><input type="checkbox" name="recommended_for" value="${k}" data-multi ${String(d.recommended_for || '').split(',').includes(k) ? 'checked' : ''}> ${e} ${l}</label>`).join('')}</div></div>
+        <div class="form-section-title">Status</div>
         <div style="display:flex;gap:22px;flex-wrap:wrap">
           <label class="switch"><input type="checkbox" name="is_vegetarian" ${Number(d.is_vegetarian) ? 'checked' : ''}><span class="track"></span>Vegetarian</label>
           <label class="switch"><input type="checkbox" name="is_spicy" ${Number(d.is_spicy) ? 'checked' : ''}><span class="track"></span>Spicy</label>
           <label class="switch"><input type="checkbox" name="is_available" ${Number(d.is_available) ? 'checked' : ''}><span class="track"></span>Available today</label>
         </div>`,
       async onSubmit(data) {
-        const res = await FA.api(method, endpoint, { ...data, price: Number(data.price) });
+        const num = (v) => (v === '' || v === undefined ? null : Number(v));
+        const res = await FA.api(method, endpoint, {
+          ...data, price: Number(data.price),
+          weight_g: num(data.weight_g), calories: num(data.calories),
+          protein_g: num(data.protein_g), fat_g: num(data.fat_g), carbs_g: num(data.carbs_g),
+        });
         FA.toast(res.message);
         if (onDone) onDone();
       },

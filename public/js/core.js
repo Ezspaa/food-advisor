@@ -208,7 +208,7 @@
   /* ---------------- Cards ---------------- */
   FA.restaurantCard = function (r, i = 0) {
     const img = r.image_url
-      ? `<img src="${FA.esc(r.image_url)}" alt="${FA.esc(r.name)}" loading="lazy" data-fallback="${FA.esc(r.cuisine_emoji || '🍽️')}">`
+      ? `<img src="${FA.esc(r.image_url)}" alt="${FA.esc(r.name)}" loading="lazy" class="fade" data-fallback="${FA.esc(r.cuisine_emoji || '🍽️')}">`
       : `<div class="img-fallback">${FA.esc(r.cuisine_emoji || '🍽️')}</div>`;
     return `
       <article class="r-card" style="animation-delay:${Math.min(i, 12) * 40}ms">
@@ -230,9 +230,18 @@
   };
 
   const DISH_EMOJI = { Starters: '🥗', Mains: '🍲', Sides: '🍟', Desserts: '🍰', Drinks: '🥤' };
+  // labels for the nutrition / audience data
+  FA.AUDIENCE = {
+    kids: ['👶', 'Kids'], sharing: ['👥', 'Great for sharing'], sport: ['💪', 'High protein · active people'],
+    light: ['🥗', 'Light · low calorie'], halal: ['✅', 'Halal'], vegan: ['🌱', 'Vegan'], gluten_free: ['🌾', 'Gluten-free'],
+  };
+  FA.ALLERGEN = { gluten: '🌾 Gluten', dairy: '🥛 Dairy', eggs: '🥚 Eggs', nuts: '🥜 Nuts', fish: '🐟 Fish', shellfish: '🦐 Shellfish', soy: '🫘 Soy', sesame: '⚪ Sesame' };
+  FA.dishCache = {};
+
   FA.dishCard = function (d, opts = {}) {
+    FA.dishCache[d.id] = { ...FA.dishCache[d.id], ...d };
     const thumb = d.image_url
-      ? `<img src="${FA.esc(d.image_url)}" alt="${FA.esc(d.name)}" loading="lazy" data-fallback="${DISH_EMOJI[d.category] || '🍽️'}">`
+      ? `<img src="${FA.esc(d.image_url)}" alt="${FA.esc(d.name)}" loading="lazy" class="fade" data-fallback="${DISH_EMOJI[d.category] || '🍽️'}">`
       : DISH_EMOJI[d.category] || '🍽️';
     const tags = [
       Number(d.is_vegetarian) ? `<span class="badge badge-green">${FA.icon('leaf')}Vegetarian</span>` : '',
@@ -242,17 +251,89 @@
     const where = opts.showRestaurant
       ? `<a href="/restaurant?id=${d.restaurant_id}#menu" class="muted" style="font-size:13px">${FA.esc(d.cuisine_emoji || '')} ${FA.esc(d.restaurant)} · ${FA.esc(d.city)}</a>`
       : '';
+    const facts = d.calories || d.weight_g
+      ? `<div class="facts">${d.weight_g ? `<span><b>${d.weight_g} g</b></span>` : ''}${d.calories ? `<span><b>${d.calories}</b> kcal</span>` : ''}${d.protein_g ? `<span>P ${Math.round(d.protein_g)} g</span>` : ''}</div>`
+      : '';
+    const clickable = opts.clickable !== false;
     return `
-      <div class="d-card ${d.is_available !== undefined && !Number(d.is_available) ? 'unavailable' : ''}">
+      <div class="d-card ${d.is_available !== undefined && !Number(d.is_available) ? 'unavailable' : ''}" ${clickable ? `data-dish="${d.id}" role="button" tabindex="0" aria-label="Details of ${FA.esc(d.name)}"` : ''}>
         <div class="thumb">${thumb}</div>
         <div class="info">
           <h4>${FA.esc(d.name)}</h4>
           ${where}
           ${d.description ? `<p class="desc">${FA.esc(d.description)}</p>` : ''}
+          ${facts}
           <div class="row">${tags}<span class="price-tag">${FA.money(d.price)}</span></div>
         </div>
       </div>`;
   };
+
+  /* Dish details: weight, calories, macros, allergens and who it suits */
+  FA.showDish = async function (id) {
+    let d = FA.dishCache[id];
+    if (!d || d.calories === undefined || !d.restaurant) {
+      try { d = { ...d, ...(await FA.api('GET', '/dishes/' + id)).dish }; FA.dishCache[id] = d; } catch (e) { if (!d) return FA.toast(e.message, 'error'); }
+    }
+    const kcalP = (Number(d.protein_g) || 0) * 4;
+    const kcalF = (Number(d.fat_g) || 0) * 9;
+    const kcalC = (Number(d.carbs_g) || 0) * 4;
+    const kcalSum = kcalP + kcalF + kcalC || 1;
+    const hasNutrition = d.calories !== null && d.calories !== undefined;
+    const audience = String(d.recommended_for || '').split(',').filter(Boolean);
+    const allergens = String(d.allergens || '').split(',').filter(Boolean);
+    const per100 = hasNutrition && d.weight_g ? Math.round((d.calories / d.weight_g) * 100) : null;
+    const daily = hasNutrition ? Math.round((d.calories / 2000) * 100) : null;
+    const macro = (cls, label, grams, kcal) => `
+      <div class="macro macro-${cls}"><span>${label}</span><span class="track"><span data-w="${Math.round((kcal / kcalSum) * 100)}"></span></span><span class="val">${grams !== null && grams !== undefined ? Math.round(grams) + ' g' : '—'}</span></div>`;
+    const img = d.image_url ? `<img src="${FA.esc(d.image_url.replace('w=600', 'w=900'))}" alt="${FA.esc(d.name)}" class="fade">` : (DISH_EMOJI[d.category] || '🍽️');
+
+    FA.modal({
+      title: d.category || 'Dish',
+      footer: false,
+      body: `
+        <div class="dish-view">
+          <div class="dv-media">${img}</div>
+          <div class="dv-head">
+            <div>
+              <h2>${FA.esc(d.name)}</h2>
+              ${d.restaurant ? `<div class="dv-sub">${FA.esc(d.cuisine_emoji || '')} <a href="/restaurant?id=${d.restaurant_id}#menu">${FA.esc(d.restaurant)}</a>${d.city ? ' · ' + FA.esc(d.city) : ''}</div>` : ''}
+            </div>
+            <div class="dv-price">${FA.money(d.price)}</div>
+          </div>
+          ${d.description ? `<p class="dv-desc">${FA.esc(d.description)}</p>` : '<div style="height:16px"></div>'}
+          ${hasNutrition ? `
+          <div class="dv-stats">
+            <div class="dv-stat"><b>${d.weight_g || '—'}${d.weight_g ? '<small> g</small>' : ''}</b><small>Portion</small></div>
+            <div class="dv-stat"><b>${d.calories}</b><small>kcal</small></div>
+            <div class="dv-stat"><b>${per100 ?? '—'}</b><small>kcal / 100 g</small></div>
+            <div class="dv-stat"><b>${daily}%</b><small>of 2000 kcal day</small></div>
+          </div>
+          <div class="dv-section"><h4>Nutrition per portion</h4>
+            ${macro('protein', 'Protein', d.protein_g, kcalP)}${macro('fat', 'Fat', d.fat_g, kcalF)}${macro('carbs', 'Carbs', d.carbs_g, kcalC)}
+            <small class="muted">Bars show the share of energy from each macronutrient.</small>
+          </div>` : '<p class="muted">The restaurant has not added nutrition facts for this dish yet.</p>'}
+          <div class="dv-section"><h4>Recommended for</h4>
+            <div class="tag-list">${audience.length ? audience.map((a) => `<span class="tag good">${FA.AUDIENCE[a][0]} ${FA.AUDIENCE[a][1]}</span>`).join('') : '<span class="muted">Everyone who loves good food 🙂</span>'}
+              ${Number(d.is_vegetarian) ? `<span class="tag good">${FA.icon('leaf')} Vegetarian</span>` : ''}${Number(d.is_spicy) ? '<span class="tag warn">🌶️ Spicy</span>' : ''}</div>
+          </div>
+          <div class="dv-section"><h4>Allergens</h4>
+            <div class="tag-list">${allergens.length ? allergens.map((a) => `<span class="tag warn">${FA.ALLERGEN[a]}</span>`).join('') : '<span class="tag good">No common allergens listed</span>'}</div>
+          </div>
+          ${d.is_available !== undefined && !Number(d.is_available) ? `<div class="alert alert-warn" style="margin:18px 0 0">${FA.icon('info')}<span>Sold out today.</span></div>` : ''}
+          <p class="muted" style="font-size:12px;margin-top:18px">Values are approximate and provided by the restaurant.</p>
+        </div>`,
+      onOpen($form) {
+        setTimeout(() => $form.find('.macro .track span').each(function () { $(this).css('width', $(this).data('w') + '%'); }), 120);
+      },
+    });
+  };
+  $(document).on('click', '[data-dish]', function (e) {
+    if ($(e.target).closest('a, button').length) return; // links inside the card keep working
+    FA.showDish($(this).data('dish'));
+  });
+  $(document).on('keydown', '[data-dish]', function (e) {
+    if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); FA.showDish($(this).data('dish')); }
+  });
 
   FA.skeletonCards = (n = 6) => Array.from({ length: n }, () => '<div class="sk-card"><div class="skeleton sk-media"></div><div class="skeleton sk-line"></div><div class="skeleton sk-line short"></div></div>').join('');
   FA.empty = (emoji, title, text, action = '') => `<div class="empty"><div class="e-ico">${emoji}</div><h3>${title}</h3><p>${text}</p>${action}</div>`;
@@ -294,7 +375,14 @@
       }, 200);
     }
     $bd.on('click', '[data-close]', close);
-    $bd.on('mousedown', (e) => { if (e.target === $bd[0]) close(); });
+    // close when the dark backdrop is clicked — but ignore the "ghost" touch events
+    // iOS Safari sends right after the tap that opened the modal
+    const openedAt = Date.now();
+    let downOnBackdrop = false;
+    $bd.on('pointerdown', (e) => { downOnBackdrop = e.target === $bd[0]; });
+    $bd.on('click', (e) => {
+      if (e.target === $bd[0] && downOnBackdrop && Date.now() - openedAt > 400) close();
+    });
     $(document).on('keydown.modal', (e) => { if (e.key === 'Escape') close(); });
 
     $form.on('submit', async (e) => {
@@ -326,7 +414,7 @@
         onSubmit: () => { answered = true; resolve(true); },
       });
       m.$el.on('click', '[data-close]', () => { if (!answered) resolve(false); });
-      m.$el.on('mousedown', (e) => { if (e.target === m.$el[0] && !answered) resolve(false); });
+      m.$el.on('click', (e) => { if (e.target === m.$el[0] && !answered) setTimeout(() => { if (!m.$el.closest('body').length) resolve(false); }, 250); });
     });
   };
 
@@ -338,7 +426,8 @@
     $form.find('input[name], select[name], textarea[name]').each(function () {
       const $el = $(this);
       const name = this.name;
-      if (this.type === 'checkbox') data[name] = this.checked;
+      if (this.type === 'checkbox' && $el.is('[data-multi]')) { (data[name] = data[name] || []); if (this.checked) data[name].push($el.val()); }
+      else if (this.type === 'checkbox') data[name] = this.checked;
       else if (this.type === 'radio') { if (this.checked) data[name] = $el.val(); }
       else data[name] = $el.val();
     });
@@ -611,7 +700,20 @@
     const $nav = $('.mobile-nav').toggleClass('open');
     $(this).attr('aria-expanded', $nav.hasClass('open'));
   });
-  $(window).on('scroll', () => $('.site-header').toggleClass('is-scrolled', window.scrollY > 8));
+  // header: shadow once scrolled, slides away while scrolling down, comes back when scrolling up
+  let lastY = 0;
+  $(window).on('scroll', () => {
+    const y = window.scrollY;
+    const $h = $('.site-header');
+    $h.toggleClass('is-scrolled', y > 8);
+    const menuOpen = $('.mobile-nav.open, .dropdown.open').length > 0;
+    if (!menuOpen && Math.abs(y - lastY) > 6) {
+      const hide = y > lastY && y > 220;
+      $h.toggleClass('is-hidden', hide);
+      document.documentElement.classList.toggle('header-hidden', hide); // sticky elements move up too
+    }
+    lastY = y;
+  });
 
   FA.logout = async function () {
     try { await FA.api('POST', '/auth/logout'); } catch (e) { /* already invalid */ }
@@ -700,11 +802,116 @@
     return { close };
   };
 
+  /* ---------------- Motion ---------------- */
+  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const REVEAL = '.section-head, .r-card, .d-card, .cuisine-tile, .kpi, .review, .own-r-card, .mini-review, .stats-strip .card, .grid-2 > .card, .grid-2-1 > .card, .menu-cat h3, .fb-item';
+
+  // 1. scroll reveal: elements glide in the first time they enter the screen
+  const revealObserver = 'IntersectionObserver' in window && !reduceMotion
+    ? new IntersectionObserver((entries) => {
+      let batch = 0;
+      entries.forEach((entry) => {
+        if (!entry.isIntersecting) return;
+        entry.target.style.setProperty('--rv-delay', Math.min(batch++, 8) * 60 + 'ms');
+        entry.target.classList.add('in');
+        revealObserver.unobserve(entry.target);
+      });
+    }, { rootMargin: '0px 0px -40px 0px', threshold: 0.08 })
+    : null;
+  function prepare(root) {
+    $(root).find(REVEAL).addBack(REVEAL).each((_, el) => {
+      if (el.classList.contains('rv') || !revealObserver || el.closest('.modal, .filters, .dropdown')) return;
+      el.classList.add('rv');
+      revealObserver.observe(el);
+    });
+    // bars (<span data-w="40">) grow from 0 to their width
+    const $bars = $(root).find('[data-w]').addBack('[data-w]').filter((_, el) => !el.dataset.grown);
+    if ($bars.length) {
+      $bars.each((_, el) => { el.dataset.grown = '1'; });
+      setTimeout(() => $bars.each((_, el) => { el.style.width = el.dataset.w + '%'; }), 150);
+    }
+    // KPI numbers count up
+    $(root).find('.kpi b').each((_, el) => {
+      const text = el.textContent.trim();
+      if (el.dataset.counted || !/^\d+(\.\d+)?$/.test(text)) return;
+      el.dataset.counted = '1';
+      FA.countUp($(el), text, (text.split('.')[1] || '').length);
+    });
+    // 2. images fade in once loaded
+    $(root).find('img.fade').addBack('img.fade').each((_, img) => {
+      if (img.complete && img.naturalWidth) img.classList.add('loaded');
+    });
+  }
+  document.addEventListener('load', (e) => { if (e.target.tagName === 'IMG') e.target.classList.add('loaded'); }, true);
+  new MutationObserver((records) => records.forEach((r) => r.addedNodes.forEach((n) => { if (n.nodeType === 1) prepare(n); })))
+    .observe(document.documentElement, { childList: true, subtree: true });
+
+  // 3. smooth page-to-page transition for internal links
+  $(document).on('click', 'a[href]', function (e) {
+    const a = this;
+    if (reduceMotion || e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+    if (a.target && a.target !== '_self') return;
+    const url = new URL(a.href, location.href);
+    if (url.origin !== location.origin || (url.pathname === location.pathname && url.search === location.search)) return;
+    e.preventDefault();
+    document.body.classList.add('is-leaving');
+    setTimeout(() => { window.location.href = url.href; }, 170);
+  });
+  window.addEventListener('pageshow', () => document.body.classList.remove('is-leaving')); // back/forward cache
+
+  // 4. animated number counters: <b data-count="123">
+  FA.countUp = function ($el, value, decimals = 0) {
+    if (reduceMotion) return $el.text(Number(value).toFixed(decimals));
+    $({ n: 0 }).animate({ n: Number(value) || 0 }, {
+      duration: 1100, easing: 'swing',
+      step: (n) => $el.text(n.toFixed(decimals)),
+      complete: () => $el.text(Number(value).toFixed(decimals)),
+    });
+  };
+
+  /* ---------------- Feedback button (testers can rate the site) ---------------- */
+  FA.isLocal = ['localhost', '127.0.0.1', '[::1]', '::1'].includes(location.hostname);
+  function openFeedback() {
+    const user = FA.auth.user();
+    const faces = [['1', '😞'], ['2', '🙁'], ['3', '😐'], ['4', '🙂'], ['5', '🤩']];
+    const cats = [['design', 'Design'], ['usability', 'Ease of use'], ['bug', 'Bug'], ['idea', 'Idea'], ['other', 'Other']];
+    FA.modal({
+      title: 'How do you like Food Advisor?',
+      submitText: 'Send feedback',
+      body: `
+        <p class="muted" style="margin-bottom:16px">We are students building this site — your honest opinion really helps! 🙏</p>
+        <div class="field"><span class="field-label">Your impression <span class="req">*</span></span>
+          <div class="face-rating" role="radiogroup" aria-label="Rating">${faces.map(([v, f]) => `<label><input type="radio" name="rating" value="${v}" required data-label="a rating"><span aria-label="${v} of 5">${f}</span></label>`).join('')}</div>
+          <div class="error"></div></div>
+        <div class="field"><label for="fb-cat">What is it about?</label>
+          <select class="select" id="fb-cat" name="category">${cats.map(([v, l]) => `<option value="${v}">${l}</option>`).join('')}</select></div>
+        <div class="field"><label for="fb-msg">Your message <span class="req">*</span></label>
+          <textarea class="textarea" id="fb-msg" name="message" required minlength="5" maxlength="1000" data-counter data-label="Message" placeholder="What did you like? What was confusing? What should we add?"></textarea>
+          <div class="char-count">0 / 1000</div></div>
+        ${user ? '' : '<div class="field"><label for="fb-email">Email (optional)</label><input class="input" type="email" id="fb-email" name="email" maxlength="120" placeholder="If you want us to reply"></div>'}`,
+      async onSubmit(d) {
+        const w = window.innerWidth;
+        const res = await FA.api('POST', '/feedback', {
+          ...d, rating: Number(d.rating), page: (location.pathname + location.search).slice(0, 200),
+          device: w < 640 ? 'mobile' : w < 1024 ? 'tablet' : 'desktop',
+        });
+        FA.store.set('feedbackSent', Date.now());
+        FA.toast(res.message);
+      },
+    });
+  }
+  FA.openFeedback = openFeedback;
+  $(document).on('click', '[data-feedback]', openFeedback);
+
   /* ---------------- Boot ---------------- */
   FA.ready = (async function () {
     await new Promise((r) => $(r));
     FA.renderHeader();
     FA.renderFooter();
+    if (!$('.feedback-fab').length && !/\/(login|register)/.test(location.pathname)) {
+      $('body').append(`<button type="button" class="feedback-fab" data-feedback aria-label="Send feedback">💬 <span class="lbl">Feedback</span></button>`);
+    }
+    prepare(document.body);
     if (FA.auth.token()) {
       try {
         const { user } = await FA.api('GET', '/auth/me');

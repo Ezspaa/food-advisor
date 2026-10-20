@@ -48,6 +48,13 @@ function check(value, rule, label) {
     }
     case 'bool':
       return [value === true || value === 1 || value === '1' || value === 'true' ? 1 : 0];
+    case 'set': {
+      // array or comma-separated string; every item must be allowed → 'a,b,c'
+      const items = (Array.isArray(value) ? value : String(value).split(',')).map((x) => String(x).trim()).filter(Boolean);
+      const bad = items.filter((x) => !rule.values.includes(x));
+      if (bad.length) return [null, `${label} contains unknown values: ${bad.join(', ')}`];
+      return [[...new Set(items)].join(',')];
+    }
     case 'enum':
       if (!rule.values.includes(value)) return [null, `${label} must be one of: ${rule.values.join(', ')}`];
       return [value];
@@ -92,7 +99,7 @@ function validate(input, rules) {
     const raw = body[field];
     if (isEmpty(raw)) {
       if (rule.required) errors[field] = `${label} is required`;
-      else values[field] = rule.type === 'bool' ? 0 : rule.default !== undefined ? rule.default : null;
+      else values[field] = rule.type === 'bool' ? 0 : rule.type === 'set' ? '' : rule.default !== undefined ? rule.default : null;
       continue;
     }
     const [value, error] = check(raw, rule, label);

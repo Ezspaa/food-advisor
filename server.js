@@ -11,6 +11,9 @@ const { securityHeaders } = require('./server/middleware/security');
 
 const app = express();
 app.disable('x-powered-by');
+// Behind a local tunnel / proxy (see `npm run share`) read the visitor's real IP
+// from X-Forwarded-For, so rate limiting works per visitor and not for everyone at once.
+app.set('trust proxy', 'loopback');
 app.use(securityHeaders);
 app.use(express.json({ limit: '100kb' }));
 
@@ -25,6 +28,7 @@ api.use('/reviews', require('./server/routes/reviews'));
 api.use('/me', require('./server/routes/me'));
 api.use('/owner', require('./server/routes/owner'));
 api.use('/admin', require('./server/routes/admin'));
+api.use('/feedback', require('./server/routes/feedback'));
 api.get('/health', async (req, res) => {
   await pool.query('SELECT 1');
   res.json({ status: 'ok', time: new Date().toISOString() });

@@ -248,6 +248,49 @@ describe('FR11 / FR13 — administration and moderation', () => {
   });
 });
 
+describe('Dish nutrition facts', () => {
+  test('dish details include weight, calories, macros, allergens and audiences', async () => {
+    const r = await api('GET', '/dishes/1');
+    assert.equal(r.status, 200);
+    for (const k of ['weight_g', 'calories', 'protein_g', 'fat_g', 'carbs_g', 'allergens', 'recommended_for']) assert.ok(k in r.data.dish, k);
+  });
+  test('filters: recommended for, max calories, without allergens', async () => {
+    const r = await api('GET', '/dishes?for=sport&maxCalories=600&free=gluten,dairy&limit=50');
+    assert.ok(r.data.total > 0);
+    r.data.items.forEach((d) => {
+      assert.ok(d.recommended_for.split(',').includes('sport'));
+      assert.ok(d.calories <= 600);
+      assert.ok(!d.allergens.split(',').includes('gluten') && !d.allergens.split(',').includes('dairy'));
+    });
+  });
+  test('owner saves nutrition facts; unknown allergens are rejected', async () => {
+    const bad = await api('PUT', `/owner/dishes/${dishId}`, { token: owner, body: { name: 'Test Plov XL', category: 'Mains', price: 3100, allergens: ['plutonium'] } });
+    assert.equal(bad.status, 422);
+    const ok = await api('PUT', `/owner/dishes/${dishId}`, { token: owner, body: {
+      name: 'Test Plov XL', category: 'Mains', price: 3100, is_available: true,
+      weight_g: 400, calories: 720, protein_g: 30, fat_g: 32, carbs_g: 78, allergens: ['eggs'], recommended_for: ['halal', 'sport'],
+    } });
+    assert.equal(ok.status, 200);
+    const dish = (await api('GET', `/restaurants/${restaurantId}`)).data.dishes.find((d) => d.id === dishId);
+    assert.deepEqual([dish.weight_g, dish.calories, dish.allergens], [400, 720, 'eggs']);
+  });
+});
+
+describe('Site feedback', () => {
+  test('anyone can send feedback; invalid input is rejected', async () => {
+    assert.equal((await api('POST', '/feedback', { body: { rating: 0, category: 'x', message: '' } })).status, 422);
+    const r = await api('POST', '/feedback', { body: { rating: 5, category: 'idea', message: `Automated test ${stamp}`, device: 'desktop' } });
+    assert.equal(r.status, 201);
+  });
+  test('only admins can read feedback', async () => {
+    assert.equal((await api('GET', '/admin/feedback', { token: otherCustomer })).status, 403);
+    const r = await api('GET', '/admin/feedback', { token: admin });
+    const mine = r.data.items.find((f) => f.message === `Automated test ${stamp}`);
+    assert.ok(mine);
+    assert.equal((await api('DELETE', `/admin/feedback/${mine.id}`, { token: admin })).status, 200);
+  });
+});
+
 after(async () => {
   // clean up everything the tests created (cascades remove dishes, reviews, favourites…)
   if (restaurantId) await api('DELETE', `/admin/restaurants/${restaurantId}`, { token: admin });

@@ -6,9 +6,6 @@
   <title>Explore restaurants & dishes — Food Advisor</title>
   <meta name="description" content="Search and filter restaurants and dishes by cuisine, city, rating, price and more.">
   <link rel="icon" href="/img/favicon.svg" type="image/svg+xml">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&amp;family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap">
   <link rel="stylesheet" href="/css/style.css">
   <script src="/js/theme.js"></script>
 </head>
@@ -71,6 +68,37 @@
                   <button type="button" data-price="2" aria-pressed="false" title="Moderate">₸₸</button>
                   <button type="button" data-price="3" aria-pressed="false" title="Upscale">₸₸₸</button>
                   <button type="button" data-price="4" aria-pressed="false" title="Fine dining">₸₸₸₸</button>
+                </div>
+              </div>
+              <div class="filter-group" data-for="dishes">
+                <h4>Recommended for</h4>
+                <select class="select" name="for" id="fFor" aria-label="Recommended for">
+                  <option value="">Anyone</option>
+                  <option value="sport">💪 High protein · active</option>
+                  <option value="light">🥗 Light · low calorie</option>
+                  <option value="kids">👶 Kids</option>
+                  <option value="sharing">👥 Sharing</option>
+                  <option value="halal">✅ Halal</option>
+                  <option value="vegan">🌱 Vegan</option>
+                  <option value="gluten_free">🌾 Gluten-free</option>
+                </select>
+              </div>
+              <div class="filter-group" data-for="dishes">
+                <h4>Max calories</h4>
+                <div class="range-row">
+                  <input type="range" name="maxCalories" id="fMaxKcal" min="100" max="1500" step="50" value="1500" aria-label="Maximum calories">
+                  <output id="maxKcalOut">Any</output>
+                </div>
+              </div>
+              <div class="filter-group" data-for="dishes">
+                <h4>Without allergens</h4>
+                <div class="tag-list" id="fFree">
+                  <button type="button" class="chip chip-sm" data-free="gluten">🌾 Gluten</button>
+                  <button type="button" class="chip chip-sm" data-free="dairy">🥛 Dairy</button>
+                  <button type="button" class="chip chip-sm" data-free="nuts">🥜 Nuts</button>
+                  <button type="button" class="chip chip-sm" data-free="eggs">🥚 Eggs</button>
+                  <button type="button" class="chip chip-sm" data-free="fish">🐟 Fish</button>
+                  <button type="button" class="chip chip-sm" data-free="shellfish">🦐 Shellfish</button>
                 </div>
               </div>
               <div class="filter-group" data-for="dishes">

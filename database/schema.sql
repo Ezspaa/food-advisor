@@ -7,6 +7,7 @@
 -- =====================================================================
 
 SET FOREIGN_KEY_CHECKS = 0;
+DROP TABLE IF EXISTS feedback;
 DROP TABLE IF EXISTS review_reports;
 DROP TABLE IF EXISTS review_votes;
 DROP TABLE IF EXISTS favorites;
@@ -109,12 +110,21 @@ CREATE TABLE dishes (
   is_vegetarian  TINYINT(1) NOT NULL DEFAULT 0,
   is_spicy       TINYINT(1) NOT NULL DEFAULT 0,
   is_available   TINYINT(1) NOT NULL DEFAULT 1,
+  -- nutrition facts per portion (all optional)
+  weight_g       SMALLINT UNSIGNED NULL,
+  calories       SMALLINT UNSIGNED NULL,
+  protein_g      DECIMAL(5,1) NULL,
+  fat_g          DECIMAL(5,1) NULL,
+  carbs_g        DECIMAL(5,1) NULL,
+  allergens      SET('gluten','dairy','eggs','nuts','fish','shellfish','soy','sesame') NOT NULL DEFAULT '',
+  recommended_for SET('kids','sharing','sport','light','halal','vegan','gluten_free') NOT NULL DEFAULT '',
   created_at     DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_at     DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   CONSTRAINT chk_dishes_price CHECK (price >= 0),
   KEY idx_dishes_restaurant (restaurant_id),
   KEY idx_dishes_name (name),
   KEY idx_dishes_price (price),
+  KEY idx_dishes_calories (calories),
   CONSTRAINT fk_dishes_restaurant FOREIGN KEY (restaurant_id) REFERENCES restaurants(id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
@@ -184,4 +194,23 @@ CREATE TABLE favorites (
   PRIMARY KEY (user_id, restaurant_id),
   CONSTRAINT fk_fav_user       FOREIGN KEY (user_id)       REFERENCES users(id)       ON DELETE CASCADE,
   CONSTRAINT fk_fav_restaurant FOREIGN KEY (restaurant_id) REFERENCES restaurants(id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- ---------------------------------------------------------------------
+-- Site feedback from testers / visitors (floating "Feedback" button)
+-- ---------------------------------------------------------------------
+CREATE TABLE feedback (
+  id          INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  user_id     INT UNSIGNED NULL,
+  rating      TINYINT UNSIGNED NOT NULL,
+  category    ENUM('design','usability','bug','idea','other') NOT NULL DEFAULT 'other',
+  message     VARCHAR(1000) NOT NULL,
+  email       VARCHAR(120) NULL,
+  page        VARCHAR(200) NULL,
+  device      ENUM('mobile','tablet','desktop') NULL,
+  status      ENUM('new','read') NOT NULL DEFAULT 'new',
+  created_at  DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  CONSTRAINT chk_feedback_rating CHECK (rating BETWEEN 1 AND 5),
+  KEY idx_feedback_status (status),
+  CONSTRAINT fk_feedback_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

@@ -138,9 +138,11 @@ router.post('/restaurants/:id/dishes', async (req, res) => {
   const r = await ownRestaurant(id(req.params.id), req.user.id);
   const d = validate({ is_available: true, ...req.body }, DISH_RULES);
   const result = await query(
-    `INSERT INTO dishes (restaurant_id, name, description, category, price, image_url, is_vegetarian, is_spicy, is_available)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-    [r.id, d.name, d.description, d.category, d.price, d.image_url, d.is_vegetarian, d.is_spicy, d.is_available]
+    `INSERT INTO dishes (restaurant_id, name, description, category, price, image_url, is_vegetarian, is_spicy, is_available,
+                         weight_g, calories, protein_g, fat_g, carbs_g, allergens, recommended_for)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+    [r.id, d.name, d.description, d.category, d.price, d.image_url, d.is_vegetarian, d.is_spicy, d.is_available,
+      d.weight_g, d.calories, d.protein_g, d.fat_g, d.carbs_g, d.allergens, d.recommended_for]
   );
   res.status(201).json({ id: result.insertId, message: `"${d.name}" added to the menu` });
 });
@@ -150,8 +152,11 @@ router.put('/dishes/:id', async (req, res) => {
   const d = validate(req.body, DISH_RULES);
   await query(
     `UPDATE dishes SET name = ?, description = ?, category = ?, price = ?, image_url = ?,
-            is_vegetarian = ?, is_spicy = ?, is_available = ? WHERE id = ?`,
-    [d.name, d.description, d.category, d.price, d.image_url, d.is_vegetarian, d.is_spicy, d.is_available, dish.id]
+            is_vegetarian = ?, is_spicy = ?, is_available = ?,
+            weight_g = ?, calories = ?, protein_g = ?, fat_g = ?, carbs_g = ?, allergens = ?, recommended_for = ?
+      WHERE id = ?`,
+    [d.name, d.description, d.category, d.price, d.image_url, d.is_vegetarian, d.is_spicy, d.is_available,
+      d.weight_g, d.calories, d.protein_g, d.fat_g, d.carbs_g, d.allergens, d.recommended_for, dish.id]
   );
   res.json({ message: 'Dish updated' });
 });

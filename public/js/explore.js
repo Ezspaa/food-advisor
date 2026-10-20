@@ -6,9 +6,10 @@ $(async function () {
 
   const SORTS = {
     restaurants: [['recommended', 'Recommended'], ['rating', 'Highest rated'], ['reviews', 'Most reviewed'], ['price_asc', 'Price: low to high'], ['price_desc', 'Price: high to low'], ['name', 'Name A–Z'], ['newest', 'Newest']],
-    dishes: [['recommended', 'Recommended'], ['price_asc', 'Price: low to high'], ['price_desc', 'Price: high to low'], ['name', 'Name A–Z']],
+    dishes: [['recommended', 'Recommended'], ['price_asc', 'Price: low to high'], ['price_desc', 'Price: high to low'], ['calories_asc', 'Fewest calories'], ['protein_desc', 'Most protein'], ['name', 'Name A–Z']],
   };
-  const FIELDS = ['q', 'city', 'cuisine', 'category', 'minRating', 'price', 'maxPrice', 'openNow', 'vegetarian', 'spicy', 'sort', 'page'];
+  const FIELDS = ['q', 'city', 'cuisine', 'category', 'minRating', 'price', 'maxPrice', 'openNow', 'vegetarian', 'spicy', 'for', 'maxCalories', 'free', 'sort', 'page'];
+  const FOR_LABELS = { sport: '💪 High protein', light: '🥗 Light', kids: '👶 Kids', sharing: '👥 Sharing', halal: '✅ Halal', vegan: '🌱 Vegan', gluten_free: '🌾 Gluten-free' };
   let meta = { cuisines: [], cities: [] };
   let state = readUrl();
   let request = 0;
@@ -49,6 +50,11 @@ $(async function () {
     });
     $('#fMaxPrice').val(state.maxPrice || 15000);
     $('#maxPriceOut').text(state.maxPrice ? 'up to ' + FA.money(state.maxPrice) : 'Any');
+    $('#fFor').val(state.for || '');
+    $('#fMaxKcal').val(state.maxCalories || 1500);
+    $('#maxKcalOut').text(state.maxCalories ? `≤ ${state.maxCalories} kcal` : 'Any');
+    const free = (state.free || '').split(',');
+    $('#fFree [data-free]').each(function () { $(this).toggleClass('active', free.includes($(this).data('free'))); });
     $('#fOpen').prop('checked', state.openNow === '1');
     $('#fVeg').prop('checked', state.vegetarian === '1');
     $('#fSpicy').prop('checked', state.spicy === '1');
@@ -84,6 +90,9 @@ $(async function () {
       if (state.maxPrice) chip('maxPrice', '≤ ' + FA.money(state.maxPrice));
       if (state.vegetarian) chip('vegetarian', '🌿 Vegetarian');
       if (state.spicy) chip('spicy', '🌶️ Spicy');
+      if (state.for) chip('for', FOR_LABELS[state.for] || FA.esc(state.for));
+      if (state.maxCalories) chip('maxCalories', `≤ ${state.maxCalories} kcal`);
+      if (state.free) chip('free', 'No ' + FA.esc(state.free.split(',').join(', ')));
     }
     if (chips.length > 1) chips.push('<button type="button" class="btn btn-ghost btn-xs" data-remove="all">Clear all</button>');
     $('#activeFilters').html(chips.join(''));
@@ -97,7 +106,7 @@ $(async function () {
     $('#results').html(dishes ? '<div class="d-grid">' + Array(6).fill('<div class="skeleton" style="height:122px;border-radius:14px"></div>').join('') + '</div>' : `<div class="r-grid">${FA.skeletonCards(6)}</div>`);
     const params = { ...state, limit: dishes ? 12 : 9 };
     delete params.mode;
-    if (dishes) { delete params.price; delete params.openNow; } else { delete params.category; delete params.maxPrice; delete params.vegetarian; delete params.spicy; }
+    if (dishes) { delete params.price; delete params.openNow; } else { ['category', 'maxPrice', 'vegetarian', 'spicy', 'for', 'maxCalories', 'free'].forEach((k) => delete params[k]); }
     try {
       const res = await FA.api('GET', dishes ? '/dishes' : '/restaurants', params);
       if (id !== request) return; // a newer request is on its way
@@ -153,6 +162,14 @@ $(async function () {
   $('#fMaxPrice').on('input', function () { $('#maxPriceOut').text(this.value == 15000 ? 'Any' : 'up to ' + FA.money(this.value)); });
   $('#fMaxPrice').on('change', function () { set({ maxPrice: this.value == 15000 ? '' : this.value }); });
   $('#fOpen').on('change', function () { set({ openNow: this.checked ? '1' : '' }); });
+  $('#fFor').on('change', function () { set({ for: this.value }); });
+  $('#fMaxKcal').on('input', function () { $('#maxKcalOut').text(this.value == 1500 ? 'Any' : `≤ ${this.value} kcal`); });
+  $('#fMaxKcal').on('change', function () { set({ maxCalories: this.value == 1500 ? '' : this.value }); });
+  $('#fFree').on('click', '[data-free]', function () {
+    const a = $(this).data('free');
+    const list = (state.free || '').split(',').filter(Boolean);
+    set({ free: (list.includes(a) ? list.filter((x) => x !== a) : [...list, a]).join(',') });
+  });
   $('#fVeg').on('change', function () { set({ vegetarian: this.checked ? '1' : '' }); });
   $('#fSpicy').on('change', function () { set({ spicy: this.checked ? '1' : '' }); });
   $('#sort').on('change', function () { set({ sort: this.value === 'recommended' ? '' : this.value }); });

@@ -9,7 +9,8 @@
     "go": "node scripts/start.js",
     "dev": "node --watch --env-file-if-exists=.env server.js",
     "db:setup": "node --env-file-if-exists=.env database/setup.js",
-    "test": "node --test tests/"
+    "test": "node --test tests/",
+    "share": "node scripts/share.js"
   },
   "engines": {
     "node": ">=22.9"

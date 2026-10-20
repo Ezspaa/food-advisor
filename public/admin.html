@@ -6,9 +6,6 @@
   <title>Admin panel — Food Advisor</title>
   <meta name="description" content="Administer users, restaurants and reviews on Food Advisor.">
   <link rel="icon" href="/img/favicon.svg" type="image/svg+xml">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&amp;family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap">
   <link rel="stylesheet" href="/css/style.css">
   <script src="/js/theme.js"></script>
 </head>
@@ -76,6 +73,16 @@
           <div class="dash-title"><div><h2>Reports</h2><p>Reviews flagged by the community.</p></div>
             <div class="segmented" id="reportStatus"><button type="button" data-status="open" class="active">Open</button><button type="button" data-status="resolved">Resolved</button><button type="button" data-status="dismissed">Dismissed</button></div></div>
           <div id="reportList"></div>
+        </section>
+
+        <section class="dash-section" data-section="feedback">
+          <div class="dash-title"><div><h2>Site feedback</h2><p>What testers and visitors think about Food Advisor.</p></div>
+            <div style="display:flex;gap:10px;flex-wrap:wrap">
+              <select class="select" id="fbStatus" style="width:auto;height:40px" aria-label="Status"><option value="">All</option><option value="new">Unread</option><option value="read">Read</option></select>
+              <select class="select" id="fbCategory" style="width:auto;height:40px" aria-label="Category"><option value="">All topics</option><option value="design">Design</option><option value="usability">Ease of use</option><option value="bug">Bugs</option><option value="idea">Ideas</option><option value="other">Other</option></select>
+            </div></div>
+          <div class="kpis" id="fbKpis" style="grid-template-columns:repeat(3,1fr)"></div>
+          <div class="card" id="fbList"></div>
         </section>
 
         <section class="dash-section" data-section="cuisines">

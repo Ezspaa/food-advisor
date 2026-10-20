@@ -25,6 +25,7 @@ router.get('/overview', async (req, res) => {
               (SELECT COUNT(*) FROM reviews) AS reviews,
               (SELECT COUNT(*) FROM reviews WHERE status = 'hidden') AS hidden_reviews,
               (SELECT COUNT(*) FROM review_reports WHERE status = 'open') AS open_reports,
+              (SELECT COUNT(*) FROM feedback WHERE status = 'new') AS new_feedback,
               (SELECT ROUND(AVG(rating), 2) FROM reviews WHERE status = 'visible') AS avg_rating`
     ),
     query('SELECT role, COUNT(*) AS count FROM users GROUP BY role'),
@@ -236,6 +237,38 @@ router.patch('/reports/:id', async (req, res) => {
     await query("UPDATE review_reports SET status = 'dismissed', resolved_at = NOW() WHERE id = ?", [reportId]);
   }
   res.json({ message: action === 'hide' ? 'Review hidden and report resolved' : 'Report dismissed' });
+});
+
+// ---------- Site feedback ----------
+
+router.get('/feedback', async (req, res) => {
+  const where = [];
+  const params = [];
+  if (['new', 'read'].includes(req.query.status)) { where.push('f.status = ?'); params.push(req.query.status); }
+  if (['design', 'usability', 'bug', 'idea', 'other'].includes(req.query.category)) { where.push('f.category = ?'); params.push(req.query.category); }
+  const whereSql = where.length ? `WHERE ${where.join(' AND ')}` : '';
+  const [items, [summary]] = await Promise.all([
+    query(
+      `SELECT f.*, u.name AS user_name FROM feedback f LEFT JOIN users u ON u.id = f.user_id
+        ${whereSql} ORDER BY f.status = 'new' DESC, f.created_at DESC LIMIT 200`,
+      params
+    ),
+    query("SELECT COUNT(*) AS total, ROUND(AVG(rating), 1) AS avg_rating, SUM(status = 'new') AS unread FROM feedback"),
+  ]);
+  res.json({ items, summary });
+});
+
+router.patch('/feedback/:id', async (req, res) => {
+  const { status } = validate(req.body, { status: { type: 'enum', required: true, values: ['new', 'read'] } });
+  const result = await query('UPDATE feedback SET status = ? WHERE id = ?', [status, id(req.params.id)]);
+  if (!result.affectedRows) throw notFound('Feedback');
+  res.json({ message: status === 'read' ? 'Marked as read' : 'Marked as unread' });
+});
+
+router.delete('/feedback/:id', async (req, res) => {
+  const result = await query('DELETE FROM feedback WHERE id = ?', [id(req.params.id)]);
+  if (!result.affectedRows) throw notFound('Feedback');
+  res.json({ message: 'Feedback deleted' });
 });
 
 // ---------- Cuisines (lookup data) ----------

@@ -144,7 +144,7 @@ $(async function () {
       <tr>
         <td><div class="cell-user">${d.image_url ? `<img class="thumb" src="${FA.esc(d.image_url)}" alt="" data-fallback-hide>` : '<span class="thumb" style="display:grid;place-items:center">🍽️</span>'}<div><b>${FA.esc(d.name)}</b><small class="text-clip" style="display:block;max-width:280px">${FA.esc(d.description || '')}</small></div></div></td>
         <td>${FA.esc(d.category)}</td>
-        <td><b>${FA.money(d.price)}</b></td>
+        <td class="nowrap"><b>${FA.money(d.price)}</b>${d.calories ? `<br><small class="muted">${d.weight_g ? d.weight_g + ' g · ' : ''}${d.calories} kcal</small>` : ''}</td>
         <td>${Number(d.is_vegetarian) ? '<span class="badge badge-green">Veg</span> ' : ''}${Number(d.is_spicy) ? '<span class="badge badge-red">Spicy</span>' : ''}</td>
         <td><label class="switch"><input type="checkbox" data-avail="${d.id}" ${Number(d.is_available) ? 'checked' : ''} aria-label="Available"><span class="track"></span></label></td>
         <td><div class="actions"><button class="btn btn-xs" data-edit-dish="${d.id}">${FA.icon('edit')} Edit</button><button class="btn btn-xs btn-soft-danger btn-icon" data-delete-dish="${d.id}" aria-label="Delete ${FA.esc(d.name)}">${FA.icon('trash')}</button></div></td>

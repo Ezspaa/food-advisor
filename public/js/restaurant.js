@@ -100,6 +100,7 @@ $(async function () {
     if (q && !(`${d.name} ${d.description || ''}`.toLowerCase().includes(q))) return false;
     if (menuFilter === 'veg' && !Number(d.is_vegetarian)) return false;
     if (menuFilter === 'spicy' && !Number(d.is_spicy)) return false;
+    if (['light', 'sport', 'kids'].includes(menuFilter) && !String(d.recommended_for || '').split(',').includes(menuFilter)) return false;
     return true;
   }
 
@@ -119,7 +120,7 @@ $(async function () {
       const c = data.ratings[n];
       const pct = total ? Math.round((c / total) * 100) : 0;
       return `<button type="button" class="dist-row ${ratingFilter === n ? 'active' : ''}" data-rating-filter="${n}" ${compact ? 'tabindex="-1"' : ''} aria-label="Show ${n}-star reviews (${c})">
-        <span>${n} ★</span><span class="bar"><span style="width:${pct}%"></span></span><span class="n">${c}</span></button>`;
+        <span>${n} ★</span><span class="bar"><span style="width:0" data-w="${pct}"></span></span><span class="n">${c}</span></button>`;
     }).join('');
     return `<div class="rating-summary">
       <div class="rating-big"><b>${total ? Number(r.avg_rating).toFixed(1) : '—'}</b>${FA.stars(r.avg_rating)}<small>${total} review${total === 1 ? '' : 's'}</small></div>

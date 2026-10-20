@@ -1,8 +1,10 @@
 // FR2/FR3 — search dishes across all approved restaurants.
 const express = require('express');
-const { query } = require('../db');
+const { query, one } = require('../db');
 const { id } = require('../utils/validate');
 const { likeTerm, paging } = require('../utils/sql');
+const { notFound } = require('../utils/http-error');
+const { ALLERGENS, AUDIENCES } = require('../utils/rules');
 
 const router = express.Router();
 
@@ -12,10 +14,17 @@ const SORTS = {
   price_desc: 'd.price DESC, d.name',
   name: 'd.name ASC',
   rating: 'avg_rating DESC, d.name',
+  calories_asc: 'd.calories IS NULL, d.calories ASC, d.name',
+  protein_desc: 'd.protein_g IS NULL, d.protein_g DESC, d.name',
 };
+
+const DISH_COLUMNS = `d.id, d.name, d.description, d.category, d.price, d.image_url, d.is_vegetarian, d.is_spicy, d.is_available,
+  d.weight_g, d.calories, d.protein_g, d.fat_g, d.carbs_g, d.allergens, d.recommended_for`;
 
 /**
  * GET /api/dishes?q=&cuisine=&city=&vegetarian=1&spicy=1&maxPrice=&category=&sort=&page=
+ *   &maxCalories=600   &for=kids|sharing|sport|light|halal|vegan|gluten_free
+ *   &free=gluten,nuts  (dishes WITHOUT these allergens)
  */
 router.get('/', async (req, res) => {
   const q = req.query;
@@ -38,6 +47,13 @@ router.get('/', async (req, res) => {
   if (maxPrice > 0) { where.push('d.price <= ?'); params.push(maxPrice); }
   const minRating = Number(q.minRating);
   if (minRating > 0 && minRating <= 5) { where.push('COALESCE(st.avg_rating, 0) >= ?'); params.push(minRating); }
+  const maxCalories = Number(q.maxCalories);
+  if (maxCalories > 0) { where.push('d.calories <= ?'); params.push(maxCalories); }
+  if (AUDIENCES.includes(q.for)) { where.push('FIND_IN_SET(?, d.recommended_for) > 0'); params.push(q.for); }
+  String(q.free || '').split(',').filter((a) => ALLERGENS.includes(a)).forEach((a) => {
+    where.push('FIND_IN_SET(?, d.allergens) = 0');
+    params.push(a);
+  });
 
   const from = `
     FROM dishes d
@@ -50,7 +66,7 @@ router.get('/', async (req, res) => {
   const order = SORTS[q.sort] || SORTS.recommended;
 
   const items = await query(
-    `SELECT d.id, d.name, d.description, d.category, d.price, d.image_url, d.is_vegetarian, d.is_spicy,
+    `SELECT ${DISH_COLUMNS},
             r.id AS restaurant_id, r.name AS restaurant, r.city, r.image_url AS restaurant_image,
             c.name AS cuisine, c.emoji AS cuisine_emoji, COALESCE(st.avg_rating, 0) AS avg_rating
      ${from} ORDER BY ${order} LIMIT ? OFFSET ?`,
@@ -58,6 +74,18 @@ router.get('/', async (req, res) => {
   );
   const [{ total }] = await query(`SELECT COUNT(*) AS total ${from}`, params);
   res.json({ items, total, page, pages: Math.ceil(total / limit) });
+});
+
+/** GET /api/dishes/:id — one dish with its nutrition facts (dish details modal) */
+router.get('/:id', async (req, res) => {
+  const dish = await one(
+    `SELECT ${DISH_COLUMNS}, r.id AS restaurant_id, r.name AS restaurant, r.city, c.emoji AS cuisine_emoji, c.name AS cuisine
+       FROM dishes d JOIN restaurants r ON r.id = d.restaurant_id JOIN cuisines c ON c.id = r.cuisine_id
+      WHERE d.id = ? AND r.status = 'approved'`,
+    [id(req.params.id)]
+  );
+  if (!dish) throw notFound('Dish');
+  res.json({ dish });
 });
 
 module.exports = router;

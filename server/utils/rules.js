@@ -1,4 +1,6 @@
 // Validation rules shared by the owner and admin routes.
+const ALLERGENS = ['gluten', 'dairy', 'eggs', 'nuts', 'fish', 'shellfish', 'soy', 'sesame'];
+const AUDIENCES = ['kids', 'sharing', 'sport', 'light', 'halal', 'vegan', 'gluten_free'];
 const RESTAURANT_RULES = {
   name: { type: 'string', required: true, min: 2, max: 100, label: 'Restaurant name' },
   cuisine_id: { type: 'int', required: true, min: 1, label: 'Cuisine' },
@@ -22,6 +24,13 @@ const DISH_RULES = {
   is_vegetarian: { type: 'bool' },
   is_spicy: { type: 'bool' },
   is_available: { type: 'bool' },
+  weight_g: { type: 'int', min: 1, max: 5000, label: 'Portion weight' },
+  calories: { type: 'int', min: 0, max: 10000 },
+  protein_g: { type: 'number', min: 0, max: 1000, label: 'Protein' },
+  fat_g: { type: 'number', min: 0, max: 1000, label: 'Fat' },
+  carbs_g: { type: 'number', min: 0, max: 1000, label: 'Carbohydrates' },
+  allergens: { type: 'set', values: ALLERGENS },
+  recommended_for: { type: 'set', values: AUDIENCES, label: 'Recommended for' },
 };
 
-module.exports = { RESTAURANT_RULES, DISH_RULES };
+module.exports = { RESTAURANT_RULES, DISH_RULES, ALLERGENS, AUDIENCES };

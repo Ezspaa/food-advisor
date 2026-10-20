@@ -10,7 +10,7 @@ $(async function () {
   let rests = [];
   let cuisines = [];
 
-  const SECTIONS = [['overview', 'Overview', 'chart'], ['users', 'Users', 'users'], ['restaurants', 'Restaurants', 'store'], ['reviews', 'Reviews', 'message'], ['reports', 'Reports', 'flag'], ['cuisines', 'Cuisines', 'tag']];
+  const SECTIONS = [['overview', 'Overview', 'chart'], ['users', 'Users', 'users'], ['restaurants', 'Restaurants', 'store'], ['reviews', 'Reviews', 'message'], ['reports', 'Reports', 'flag'], ['feedback', 'Feedback', 'message'], ['cuisines', 'Cuisines', 'tag']];
   let badges = {};
 
   function current() { const h = location.hash.slice(1); return SECTIONS.some(([k]) => k === h) ? h : 'overview'; }
@@ -26,7 +26,7 @@ $(async function () {
     const s = current();
     $('[data-nav]').removeClass('active').filter(`[data-nav=${s}]`).addClass('active');
     $('.dash-section').removeClass('active').filter(`[data-section=${s}]`).addClass('active');
-    ({ overview: loadOverview, users: loadUsers, restaurants: loadRestaurants, reviews: loadReviews, reports: loadReports, cuisines: loadCuisines })[s]();
+    ({ overview: loadOverview, users: loadUsers, restaurants: loadRestaurants, reviews: loadReviews, reports: loadReports, feedback: loadFeedback, cuisines: loadCuisines })[s]();
   }
   $(window).on('hashchange', show);
 
@@ -42,7 +42,7 @@ $(async function () {
   /* ---------- Overview ---------- */
   async function refreshBadges() {
     const o = await FA.api('GET', '/admin/overview');
-    badges = { restaurants: o.totals.pending_restaurants, reports: o.totals.open_reports };
+    badges = { restaurants: o.totals.pending_restaurants, reports: o.totals.open_reports, feedback: o.totals.new_feedback };
     renderNav();
     return o;
   }
@@ -243,6 +243,42 @@ $(async function () {
       loadReports();
       refreshBadges();
     } catch (e) { FA.toast(e.message, 'error'); }
+  });
+
+  /* ---------- Site feedback ---------- */
+  const FB_FACES = ['', '😞', '🙁', '😐', '🙂', '🤩'];
+  const FB_CATS = { design: 'Design', usability: 'Ease of use', bug: 'Bug', idea: 'Idea', other: 'Other' };
+  async function loadFeedback() {
+    $('#fbList').html('<div class="card-body"><div class="skeleton" style="height:120px"></div></div>');
+    const { items, summary } = await FA.api('GET', '/admin/feedback', { status: $('#fbStatus').val(), category: $('#fbCategory').val() });
+    $('#fbKpis').html(
+      kpi('message', 'blue', 'Responses', summary.total || 0, 'All time') +
+      kpi('star', 'amber', 'Average impression', summary.avg_rating || '—', 'out of 5') +
+      kpi('flag', '', 'Unread', summary.unread || 0, 'Waiting for you'));
+    $('#fbList').html(items.length ? items.map((f) => `
+      <div class="fb-item ${f.status === 'new' ? 'unread' : ''}">
+        <div class="top">
+          <span><span style="font-size:20px;vertical-align:-3px">${FB_FACES[f.rating]}</span> <b style="color:var(--ink)">${f.rating}/5</b> · <span class="badge">${FB_CATS[f.category]}</span> ${f.status === 'new' ? '<span class="badge badge-brand">New</span>' : ''}</span>
+          <span>${FA.timeAgo(f.created_at)}</span>
+        </div>
+        <p>${FA.esc(f.message)}</p>
+        <div class="top">
+          <span>${f.user_name ? FA.icon('user') + ' ' + FA.esc(f.user_name) : 'Guest'}${f.email ? ' · ' + FA.esc(f.email) : ''}${f.device ? ' · ' + FA.esc(f.device) : ''}${f.page ? ` · <a href="${FA.esc(f.page)}" style="color:var(--brand)">${FA.esc(f.page)}</a>` : ''}</span>
+          <span class="actions" style="display:flex;gap:6px">
+            <button class="btn btn-xs" data-fb-toggle="${f.id}" data-to="${f.status === 'new' ? 'read' : 'new'}">${FA.icon(f.status === 'new' ? 'check' : 'eye')} ${f.status === 'new' ? 'Mark read' : 'Mark unread'}</button>
+            <button class="btn btn-xs btn-soft-danger btn-icon" data-fb-delete="${f.id}" aria-label="Delete feedback">${FA.icon('trash')}</button>
+          </span>
+        </div>
+      </div>`).join('') : FA.empty('💬', 'No feedback yet', 'Share the site link with testers — their feedback will appear here.'));
+  }
+  $('#fbStatus, #fbCategory').on('change', loadFeedback);
+  $(document).on('click', '[data-fb-toggle]', async function () {
+    try { FA.toast((await FA.api('PATCH', '/admin/feedback/' + $(this).data('fb-toggle'), { status: $(this).data('to') })).message); loadFeedback(); refreshBadges(); } catch (e) { FA.toast(e.message, 'error'); }
+  });
+  $(document).on('click', '[data-fb-delete]', async function () {
+    const id = $(this).data('fb-delete');
+    if (!(await FA.confirm({ title: 'Delete this feedback?', message: 'It will be removed permanently.' }))) return;
+    try { FA.toast((await FA.api('DELETE', '/admin/feedback/' + id)).message); loadFeedback(); refreshBadges(); } catch (e) { FA.toast(e.message, 'error'); }
   });
 
   /* ---------- Cuisines ---------- */

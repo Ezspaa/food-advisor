@@ -121,7 +121,8 @@ router.get('/:id', async (req, res) => {
 
   const [dishes, distribution, fav, myReview] = await Promise.all([
     query(
-      `SELECT id, name, description, category, price, image_url, is_vegetarian, is_spicy, is_available
+      `SELECT id, name, description, category, price, image_url, is_vegetarian, is_spicy, is_available,
+              weight_g, calories, protein_g, fat_g, carbs_g, allergens, recommended_for
          FROM dishes WHERE restaurant_id = ?
         ORDER BY FIELD(category, 'Starters','Mains','Sides','Desserts','Drinks'), name`,
       [restaurantId]

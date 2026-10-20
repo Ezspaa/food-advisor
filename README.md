@@ -37,6 +37,14 @@ npm start               # creates the database automatically on the first run
 
 `npm run db:setup` resets the database to the original sample data at any time (useful before recording the demo).
 
+### Share a public link with testers
+
+Double-click **`share.command`** (macOS) or **`share.bat`** (Windows), or run `npm run share`.
+This prints a temporary `https://….trycloudflare.com` link (a free Cloudflare quick tunnel, no account needed).
+Anyone can open the link on a phone or laptop while the window stays open. The site and database still run on your computer, as the coursework requires.
+Testers leave their opinion with the **💬 Feedback** button, and you read it in **Admin panel → Feedback**.
+The one-click demo-login buttons are hidden on the public link.
+
 ### Demo accounts (password for all: `Password123`)
 
 | Role | Email |
@@ -49,7 +57,7 @@ The login page also has one-click demo buttons for each role.
 
 ### Automated tests
 
-With the server running, `npm test` runs 34 end-to-end API tests (Node's built-in `node:test`). They cover every functional requirement and the security rules. The tests delete everything they create when they finish.
+With the server running, `npm test` runs 39 end-to-end API tests (Node's built-in `node:test`). They cover every functional requirement and the security rules. The tests delete everything they create when they finish.
 
 ---
 
@@ -58,7 +66,7 @@ With the server running, `npm test` runs 34 end-to-end API tests (Node's built-i
 | Layer | Technology | Where |
 |---|---|---|
 | Structure | HTML5 (semantic, accessible) | `public/*.html` |
-| Design | CSS3: custom properties, grid/flexbox, light/dark theme, responsive | `public/css/style.css` |
+| Design | CSS3: custom properties, grid/flexbox, light/dark theme, responsive, animations, system fonts (no web fonts) | `public/css/style.css` |
 | Interactivity | JavaScript + **jQuery 3.7.1** (DOM, events, AJAX, animation) | `public/js/*.js` |
 | Data transfer | **JSON** REST API | `/api/*` |
 | Backend | **Node.js** + Express | `server.js`, `server/` |
@@ -103,7 +111,9 @@ server.js                 Express app, static files, error handler
 config.js                 settings from .env
 database/schema.sql       tables, foreign keys, indexes, CHECK constraints
 database/setup.js         creates DB + realistic sample data (also run automatically on first start)
+database/nutrition.js     nutrition facts for the sample dishes
 scripts/start.js          one-click launcher used by start.command / start.bat
+scripts/share.js          public test link (Cloudflare quick tunnel), used by share.command / share.bat
 server/db.js              MySQL connection pool
 server/middleware/        auth.js (tokens + RBAC), security.js (headers, rate limit)
 server/routes/            one file per area of the REST API
@@ -133,6 +143,11 @@ tests/api.test.js         end-to-end tests
 | FR13 | Admin deletes inappropriate reviews | admin | `/admin/reviews`, `/admin/reports` | UPDATE (hide) / DELETE reviews |
 
 ### Extra features (beyond the proposal)
+
+- **Nutrition facts for every dish**: portion weight, calories, kcal per 100 g, % of a 2000 kcal day, protein, fat and carbs (with bars), allergens, and who the dish suits (kids, sharing, high protein, light, halal, vegan, gluten-free). Shown in a dish details window, filterable (max calories, recommended for, *without* chosen allergens), and editable by owners
+- **Site feedback** button on every page (rating, topic, message), with an admin inbox
+- **Public test link** (`npm run share`) for user testing on real phones
+- Smooth **motion design**: scroll-reveal, page transitions, image fade-in, slow photo zoom, header that hides while scrolling, animated counters and bars; respects *reduce motion*
 
 - Restaurant **approval workflow**: pending → approved / rejected, and **featured** restaurants
 - **Live search suggestions** (restaurants, cuisines, dishes) with keyboard navigation

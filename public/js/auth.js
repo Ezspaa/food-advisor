@@ -22,6 +22,8 @@ $(function () {
     if (remembered) { $('#email').val(remembered); $('#remember').prop('checked', true); $('#password').trigger('focus'); }
     else $('#email').trigger('focus');
 
+    // one-click demo accounts are for the local demo only — hide them on a public link
+    if (!FA.isLocal) $('.demo-accounts').remove();
     $('[data-demo]').on('click', function () {
       $('#email').val($(this).data('demo'));
       $('#password').val('Password123');
