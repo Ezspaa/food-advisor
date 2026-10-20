@@ -67,6 +67,16 @@ app.listen(config.port, async () => {
   try {
     await pool.query('SELECT 1 FROM users LIMIT 1');
     console.log(`  ✅ Connected to MySQL database "${config.db.database}"\n`);
+    // database created by an older version of the app? (no nutrition columns / feedback table)
+    const [[{ n }]] = await pool.query(
+      `SELECT COUNT(*) AS n FROM information_schema.columns
+        WHERE table_schema = DATABASE() AND table_name = 'dishes' AND column_name = 'calories'`
+    );
+    const [fb] = await pool.query("SHOW TABLES LIKE 'feedback'");
+    if (!n || !fb.length) {
+      console.warn('  ⚠️  Your database is from an older version of Food Advisor.');
+      console.warn('     Run "npm run db:setup" once to update it (this resets the sample data).\n');
+    }
   } catch (err) {
     if (['ER_BAD_DB_ERROR', 'ER_NO_SUCH_TABLE'].includes(err.code)) {
       // first run on this computer: create the database and sample data automatically
