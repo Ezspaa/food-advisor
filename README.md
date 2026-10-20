@@ -10,7 +10,7 @@ Customers search and filter restaurants, read menus and write reviews. Restauran
 
 ## 1. Quick start
 
-Requirements: **Node.js 20.12+** and **MySQL 8+** running locally.
+Requirements: **Node.js 22.9+** (LTS 22 or 24) and **MySQL 8+** running locally.
 
 ```bash
 npm install            # installs express + mysql2 (the only dependencies)

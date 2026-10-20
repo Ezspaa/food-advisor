@@ -11,7 +11,7 @@
     "test": "node --test tests/"
   },
   "engines": {
-    "node": ">=20.12"
+    "node": ">=22.9"
   },
   "dependencies": {
     "express": "^5.1.0",
