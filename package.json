@@ -1,0 +1,20 @@
+{
+  "name": "food-advisor",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Food Advisor \u2014 interactive restaurant and dish discovery web application (F28JC CW1.2, CE 202 Group 4)",
+  "main": "server.js",
+  "scripts": {
+    "start": "node --env-file-if-exists=.env server.js",
+    "dev": "node --watch --env-file-if-exists=.env server.js",
+    "db:setup": "node --env-file-if-exists=.env database/setup.js",
+    "test": "node --test tests/"
+  },
+  "engines": {
+    "node": ">=20.12"
+  },
+  "dependencies": {
+    "express": "^5.1.0",
+    "mysql2": "^3.14.0"
+  }
+}
