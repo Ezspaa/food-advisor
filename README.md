@@ -10,16 +10,32 @@ Customers search and filter restaurants, read menus and write reviews. Restauran
 
 ## 1. Quick start
 
-Requirements: **Node.js 22.9+** (LTS 22 or 24) and **MySQL 8+** running locally.
+Install once: **Node.js 22.9+** (LTS 22 or 24, from nodejs.org) and **MySQL 8+**, and make sure MySQL is running.
+
+### Easiest: double-click
+
+| macOS | Windows |
+|---|---|
+| double-click **`start.command`** | double-click **`start.bat`** |
+
+On the first run it asks for your MySQL password, saves it to `.env`, installs the dependencies, creates the database with sample data and opens the browser. After that it starts straight away.
+(macOS may block the file the first time: right-click → **Open** → **Open**.)
+
+### Or from a terminal
 
 ```bash
-npm install            # installs express + mysql2 (the only dependencies)
-cp .env.example .env   # set DB_USER / DB_PASSWORD for your MySQL
-npm run db:setup       # creates the database, tables and sample data
-npm start              # http://localhost:3000
+npm run go          # same as the double-click launcher
 ```
 
-`npm run db:setup` can be re-run at any time to reset the data.
+Manual steps, if you prefer:
+
+```bash
+npm install
+cp .env.example .env    # Windows: copy .env.example .env, then set DB_PASSWORD
+npm start               # creates the database automatically on the first run
+```
+
+`npm run db:setup` resets the database to the original sample data at any time (useful before recording the demo).
 
 ### Demo accounts (password for all: `Password123`)
 
@@ -86,7 +102,8 @@ No React and no other third-party front-end or back-end libraries are used. Pass
 server.js                 Express app, static files, error handler
 config.js                 settings from .env
 database/schema.sql       tables, foreign keys, indexes, CHECK constraints
-database/setup.js         creates DB + realistic sample data
+database/setup.js         creates DB + realistic sample data (also run automatically on first start)
+scripts/start.js          one-click launcher used by start.command / start.bat
 server/db.js              MySQL connection pool
 server/middleware/        auth.js (tokens + RBAC), security.js (headers, rate limit)
 server/routes/            one file per area of the REST API

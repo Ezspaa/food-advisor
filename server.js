@@ -64,6 +64,20 @@ app.listen(config.port, async () => {
     await pool.query('SELECT 1 FROM users LIMIT 1');
     console.log(`  ✅ Connected to MySQL database "${config.db.database}"\n`);
   } catch (err) {
-    console.warn(`  ⚠️  Database problem: ${err.message}\n     Run "npm run db:setup" (see README.md).\n`);
+    if (['ER_BAD_DB_ERROR', 'ER_NO_SUCH_TABLE'].includes(err.code)) {
+      // first run on this computer: create the database and sample data automatically
+      console.log('  ℹ️  Database not found — creating it with sample data (first run only)…');
+      try {
+        await require('./database/setup').setupDatabase();
+        console.log(`  ✅ Ready! Open http://localhost:${config.port}\n`);
+      } catch (setupErr) {
+        console.error(`  ❌ Could not create the database: ${setupErr.message}\n`);
+      }
+    } else {
+      console.warn(`  ⚠️  Database problem: ${err.message}`);
+      if (err.code === 'ER_ACCESS_DENIED_ERROR') console.warn('     Check DB_USER / DB_PASSWORD in the .env file.');
+      if (err.code === 'ECONNREFUSED') console.warn('     Is the MySQL server running?');
+      console.warn('');
+    }
   }
 });

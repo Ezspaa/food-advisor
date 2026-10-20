@@ -254,7 +254,7 @@ const REPLIES = {
 };
 
 // ---------------------------------------------------------------------
-async function main() {
+async function setupDatabase() {
   const { database, ...server } = config.db;
   console.log(`\n▶ Connecting to MySQL at ${server.host}:${server.port} as "${server.user}"…`);
   const conn = await mysql.createConnection({ ...server, multipleStatements: true, charset: 'utf8mb4' });
@@ -386,12 +386,18 @@ async function main() {
   console.log('   Customer          customer@foodadvisor.kz');
   console.log('   Restaurant owner  owner@foodadvisor.kz');
   console.log('   Administrator     admin@foodadvisor.kz\n');
-  console.log('   Start the app with:  npm start\n');
+  if (require.main === module) console.log('   Start the app with:  npm start\n');
 }
 
-main().catch((err) => {
-  console.error('\n❌ Database setup failed:', err.message);
-  if (err.code === 'ER_ACCESS_DENIED_ERROR') console.error('   Check DB_USER / DB_PASSWORD in your .env file (see .env.example).');
-  if (err.code === 'ECONNREFUSED') console.error('   Is the MySQL server running?');
-  process.exit(1);
-});
+module.exports = { setupDatabase };
+
+// Run directly with `npm run db:setup`; server.js also calls setupDatabase()
+// automatically the first time, when the database does not exist yet.
+if (require.main === module) {
+  setupDatabase().catch((err) => {
+    console.error('\n❌ Database setup failed:', err.message);
+    if (err.code === 'ER_ACCESS_DENIED_ERROR') console.error('   Check DB_USER / DB_PASSWORD in your .env file (see .env.example).');
+    if (err.code === 'ECONNREFUSED') console.error('   Is the MySQL server running?');
+    process.exit(1);
+  });
+}

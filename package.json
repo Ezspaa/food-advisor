@@ -6,6 +6,7 @@
   "main": "server.js",
   "scripts": {
     "start": "node --env-file-if-exists=.env server.js",
+    "go": "node scripts/start.js",
     "dev": "node --watch --env-file-if-exists=.env server.js",
     "db:setup": "node --env-file-if-exists=.env database/setup.js",
     "test": "node --test tests/"
