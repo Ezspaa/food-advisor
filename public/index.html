@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Food Advisor — Discover the best restaurants & dishes in Kazakhstan</title>
+  <meta name="description" content="Find restaurants and dishes by cuisine, city, rating and price. Read honest reviews and share your own dining experiences.">
+  <link rel="icon" href="/img/favicon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&amp;family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap">
+  <link rel="stylesheet" href="/css/style.css">
+  <script src="/js/theme.js"></script>
+</head>
+<body>
+  <header id="site-header" class="site-header"></header>
+
+  <main id="main">
+    <section class="hero">
+      <div class="hero-bg"><img src="https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&amp;fit=crop&amp;w=2000&amp;q=70" alt=""></div>
+      <div class="container">
+        <span class="eyebrow">📍 Aktobe · Almaty · Astana</span>
+        <h1>Find your next <em>favourite</em> table.</h1>
+        <p class="lead">Honest ratings, real menus and reviews from people who actually ate there. Search by cuisine, city, rating or price.</p>
+
+        <form class="hero-search" id="heroSearch" role="search" data-suggest-wrap>
+          <div class="search-bar">
+            <label class="seg">
+              <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+              <span class="sr-only">Search</span>
+              <input type="search" name="q" id="heroQ" placeholder="Restaurant, cuisine or dish — try “plov”">
+            </label>
+            <label class="seg seg-city">
+              <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M12 21s-7-6.2-7-11.5A7 7 0 0 1 19 9.5C19 14.8 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.5"/></svg>
+              <span class="sr-only">City</span>
+              <select name="city" id="heroCity"><option value="">All cities</option></select>
+            </label>
+            <button class="btn btn-primary btn-lg" type="submit">Search</button>
+          </div>
+        </form>
+        <div class="hero-chips" id="heroChips"><span class="label">Popular:</span></div>
+      </div>
+    </section>
+
+    <div class="container stats-strip">
+      <div class="card" id="stats" aria-live="polite">
+        <div class="stat"><span class="ico">🍽️</span><div><b data-stat="restaurants">—</b><span>Restaurants</span></div></div>
+        <div class="stat"><span class="ico">🥘</span><div><b data-stat="dishes">—</b><span>Dishes on menus</span></div></div>
+        <div class="stat"><span class="ico">⭐</span><div><b data-stat="reviews">—</b><span>Honest reviews</span></div></div>
+        <div class="stat"><span class="ico">🙌</span><div><b data-stat="customers">—</b><span>Food lovers</span></div></div>
+      </div>
+    </div>
+
+    <section class="section container hidden" id="recentSection">
+      <div class="section-head">
+        <div><h2>Continue exploring</h2><p>Restaurants you viewed recently on this device.</p></div>
+        <button class="btn btn-ghost btn-sm" id="clearRecent">Clear history</button>
+      </div>
+      <div class="r-grid" id="recentGrid"></div>
+    </section>
+
+    <section class="section container">
+      <div class="section-head">
+        <div><h2>Featured restaurants</h2><p>Hand-picked places our team keeps coming back to.</p></div>
+        <a class="link-arrow" href="/restaurants?sort=recommended">See all <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+      </div>
+      <div class="r-grid" id="featuredGrid"></div>
+    </section>
+
+    <section class="section container">
+      <div class="section-head">
+        <div><h2>Explore by cuisine</h2><p>From beshbarmak to sushi — what are you craving today?</p></div>
+      </div>
+      <div class="cuisine-grid" id="cuisineGrid"></div>
+    </section>
+
+    <section class="section container">
+      <div class="section-head">
+        <div><h2>Top rated right now</h2><p>The highest average ratings from our community.</p></div>
+        <a class="link-arrow" href="/restaurants?sort=rating">Full ranking <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+      </div>
+      <div class="r-grid" id="topGrid"></div>
+    </section>
+
+    <section class="section container">
+      <div class="section-head">
+        <div><h2>Dishes people love</h2><p>Signature plates from the best-rated kitchens.</p></div>
+        <a class="link-arrow" href="/restaurants?mode=dishes">Search all dishes <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+      </div>
+      <div class="d-grid" id="dishGrid"></div>
+    </section>
+
+    <section class="container cta-band">
+      <div class="inner">
+        <div>
+          <h2>Own a restaurant? Put it on the map.</h2>
+          <p>Create your restaurant page for free, keep your menu up to date and reply to your guests' reviews — all from one dashboard.</p>
+          <div class="actions">
+            <a href="/register?role=owner" class="btn btn-light btn-lg">List your restaurant</a>
+            <a href="/login" class="btn btn-outline-light btn-lg">Owner log in</a>
+          </div>
+        </div>
+        <ul>
+          <li>📋 Manage your menu and prices in seconds</li>
+          <li>💬 Reply publicly to every review</li>
+          <li>📈 Track your rating and review trends</li>
+        </ul>
+      </div>
+    </section>
+  </main>
+
+  <footer id="site-footer"></footer>
+
+  <script src="/js/vendor/jquery-3.7.1.min.js"></script>
+  <script src="/js/core.js"></script>
+  <script src="/js/home.js"></script>
+</body>
+</html>

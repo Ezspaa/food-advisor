@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Restaurant — Food Advisor</title>
+  <meta name="description" content="Restaurant details, menu, ratings and reviews on Food Advisor.">
+  <link rel="icon" href="/img/favicon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&amp;family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap">
+  <link rel="stylesheet" href="/css/style.css">
+  <script src="/js/theme.js"></script>
+</head>
+<body>
+  <header id="site-header" class="site-header"></header>
+
+  <main id="main">
+    <section class="r-hero" id="rHero" aria-label="Restaurant header">
+      <div class="skeleton" style="position:absolute;inset:0;border-radius:0"></div>
+    </section>
+    <div id="statusBanner" class="container status-banner"></div>
+
+    <div class="container r-layout">
+      <div>
+        <nav class="tabs" role="tablist" aria-label="Restaurant sections">
+          <button type="button" role="tab" data-tab="overview" class="active">Overview</button>
+          <button type="button" role="tab" data-tab="menu">Menu <span class="count" id="menuCount">0</span></button>
+          <button type="button" role="tab" data-tab="reviews">Reviews <span class="count" id="reviewCount">0</span></button>
+        </nav>
+
+        <section class="tab-panel" data-panel="overview" role="tabpanel">
+          <h2 class="display" style="font-size:26px;margin-bottom:12px">About</h2>
+          <p class="about-text" id="about"></p>
+          <div id="popularWrap" style="margin-top:34px">
+            <div class="section-head" style="margin-bottom:16px"><h2 style="font-size:24px">Popular dishes</h2><button type="button" class="link-arrow" data-goto="menu" style="border:0;background:none;cursor:pointer">Full menu →</button></div>
+            <div class="d-grid" id="popular"></div>
+          </div>
+          <div style="margin-top:34px">
+            <div class="section-head" style="margin-bottom:16px"><h2 style="font-size:24px">What diners say</h2><button type="button" class="link-arrow" data-goto="reviews" style="border:0;background:none;cursor:pointer">All reviews →</button></div>
+            <div class="card card-pad" id="overviewRating"></div>
+          </div>
+        </section>
+
+        <section class="tab-panel hidden" data-panel="menu" role="tabpanel">
+          <div class="menu-tools">
+            <div class="input-icon">
+              <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+              <input class="input" type="search" id="menuSearch" placeholder="Search this menu…" aria-label="Search this menu">
+            </div>
+            <button type="button" class="chip active" data-menu-filter="all">All</button>
+            <button type="button" class="chip" data-menu-filter="veg">🌿 Vegetarian</button>
+            <button type="button" class="chip" data-menu-filter="spicy">🌶️ Spicy</button>
+          </div>
+          <div id="menu"></div>
+        </section>
+
+        <section class="tab-panel hidden" data-panel="reviews" role="tabpanel">
+          <div class="card card-pad" id="ratingSummary" style="margin-bottom:22px"></div>
+          <div class="toolbar">
+            <div class="left"><h2 class="display" style="font-size:24px">Reviews</h2><span id="ratingFilterChip"></span></div>
+            <div class="right">
+              <label class="sr-only" for="reviewSort">Sort reviews</label>
+              <select class="select" id="reviewSort">
+                <option value="newest">Newest first</option>
+                <option value="helpful">Most helpful</option>
+                <option value="highest">Highest rating</option>
+                <option value="lowest">Lowest rating</option>
+              </select>
+            </div>
+          </div>
+          <div id="reviews"></div>
+        </section>
+      </div>
+
+      <aside class="r-aside" aria-label="Restaurant information">
+        <div class="card card-pad" id="infoCard"></div>
+        <div class="card card-pad" id="similarCard">
+          <h3 style="font-size:16px;margin-bottom:14px">You might also like</h3>
+          <div id="similar"></div>
+        </div>
+      </aside>
+    </div>
+  </main>
+
+  <footer id="site-footer"></footer>
+
+  <script src="/js/vendor/jquery-3.7.1.min.js"></script>
+  <script src="/js/core.js"></script>
+  <script src="/js/forms.js"></script>
+  <script src="/js/restaurant.js"></script>
+</body>
+</html>

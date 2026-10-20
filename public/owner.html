@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Owner dashboard — Food Advisor</title>
+  <meta name="description" content="Manage your restaurants, menus and guest reviews.">
+  <link rel="icon" href="/img/favicon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&amp;family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap">
+  <link rel="stylesheet" href="/css/style.css">
+  <script src="/js/theme.js"></script>
+</head>
+<body>
+  <header id="site-header" class="site-header"></header>
+
+  <main id="main">
+    <div class="container dash">
+      <nav class="dash-nav" aria-label="Dashboard sections"><div class="card" id="dashNav"></div></nav>
+      <div>
+        <section class="dash-section" data-section="overview">
+          <div class="dash-title"><div><h2 id="hello">Dashboard</h2><p>How your restaurants are doing on Food Advisor.</p></div>
+            <button class="btn btn-primary" data-add-restaurant>+ Add restaurant</button></div>
+          <div class="kpis" id="kpis"></div>
+          <div class="grid-2-1">
+            <div class="card"><div class="card-head"><h3>Reviews per month</h3><small class="muted">last 6 months</small></div><div class="card-body"><div class="bar-chart" id="monthChart"></div></div></div>
+            <div class="card"><div class="card-head"><h3>Rating breakdown</h3></div><div class="card-body"><div class="h-bars" id="ratingBars"></div></div></div>
+          </div>
+          <div class="card"><div class="card-head"><h3>Latest reviews</h3><a href="#reviews" class="link-arrow" style="font-size:14px">All reviews →</a></div><div class="card-body" id="recent"></div></div>
+        </section>
+
+        <section class="dash-section" data-section="restaurants">
+          <div class="dash-title"><div><h2>My restaurants</h2><p>Only you and the administrators can change these restaurants.</p></div>
+            <button class="btn btn-primary" data-add-restaurant>+ Add restaurant</button></div>
+          <div class="card" id="restaurantList"></div>
+        </section>
+
+        <section class="dash-section" data-section="menu">
+          <div class="dash-title"><div><h2>Menu</h2><p>Add dishes, update prices and mark items as sold out.</p></div>
+            <div style="display:flex;gap:10px;flex-wrap:wrap">
+              <label class="sr-only" for="menuRestaurant">Restaurant</label>
+              <select class="select" id="menuRestaurant" style="width:auto;min-width:220px;height:42px"></select>
+              <button class="btn btn-primary" id="addDish">+ Add dish</button>
+            </div></div>
+          <div class="card">
+            <div class="table-tools">
+              <div class="input-icon"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg><input class="input" type="search" id="dishSearch" placeholder="Search dishes…" aria-label="Search dishes"></div>
+              <select class="select" id="dishCategory" aria-label="Filter by course"><option value="">All courses</option><option>Starters</option><option>Mains</option><option>Sides</option><option>Desserts</option><option>Drinks</option></select>
+            </div>
+            <div class="table-wrap"><table class="table"><thead><tr><th>Dish</th><th>Course</th><th>Price</th><th>Tags</th><th>Available</th><th style="text-align:right">Actions</th></tr></thead><tbody id="dishRows"></tbody></table></div>
+          </div>
+        </section>
+
+        <section class="dash-section" data-section="reviews">
+          <div class="dash-title"><div><h2>Guest reviews</h2><p>Reply publicly to show guests you care.</p></div></div>
+          <div class="card">
+            <div class="table-tools">
+              <select class="select" id="revRestaurant" aria-label="Restaurant"><option value="">All restaurants</option></select>
+              <select class="select" id="revRating" aria-label="Rating"><option value="">Any rating</option><option value="5">5 ★</option><option value="4">4 ★</option><option value="3">3 ★</option><option value="2">2 ★</option><option value="1">1 ★</option></select>
+              <label class="switch"><input type="checkbox" id="revUnanswered"><span class="track"></span>Unanswered only</label>
+            </div>
+            <div class="card-body" id="reviewList"></div>
+          </div>
+        </section>
+      </div>
+    </div>
+  </main>
+
+  <footer id="site-footer"></footer>
+
+  <script src="/js/vendor/jquery-3.7.1.min.js"></script>
+  <script src="/js/core.js"></script>
+  <script src="/js/forms.js"></script>
+  <script src="/js/owner.js"></script>
+</body>
+</html>

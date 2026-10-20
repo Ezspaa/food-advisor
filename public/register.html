@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Create an account — Food Advisor</title>
+  <meta name="description" content="Join Food Advisor as a food lover or list your restaurant.">
+  <link rel="icon" href="/img/favicon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&amp;family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap">
+  <link rel="stylesheet" href="/css/style.css">
+  <script src="/js/theme.js"></script>
+</head>
+<body>
+  <header id="site-header" class="site-header"></header>
+
+  <main id="main" class="auth">
+    <div class="auth-visual">
+      <img src="https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&amp;fit=crop&amp;w=1400&amp;q=70" alt="">
+      <blockquote><p>Join thousands of food lovers sharing honest reviews across Kazakhstan.</p><footer>Free forever · No spam</footer></blockquote>
+    </div>
+    <div class="auth-form">
+      <div class="box">
+        <h1>Create your account</h1>
+        <p class="sub">It takes less than a minute.</p>
+        <div id="formAlert"></div>
+        <form id="registerForm" novalidate>
+          <div class="field">
+            <span class="field-label">I want to… <span class="req">*</span></span>
+            <div class="role-cards">
+              <label class="role-card"><input type="radio" name="role" value="customer" required checked>
+                <span class="inner"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg><b>Discover food</b><small>Find restaurants, write reviews and save favourites.</small></span></label>
+              <label class="role-card"><input type="radio" name="role" value="owner" required>
+                <span class="inner"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 10v10h16V10M3 4h18l-1.5 6a3 3 0 0 1-5.6.6 3 3 0 0 1-5.8 0A3 3 0 0 1 4.5 10z"/><path d="M10 20v-5h4v5"/></svg><b>List my restaurant</b><small>Manage your restaurant page, menu and reviews.</small></span></label>
+            </div>
+            <div class="error"></div>
+          </div>
+          <div class="field">
+            <label for="name">Full name <span class="req">*</span></label>
+            <div class="input-icon"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg><input class="input" id="name" name="name" required minlength="2" maxlength="80" autocomplete="name" placeholder="Aruzhan Bekova"></div>
+          </div>
+          <div class="field">
+            <label for="email">Email <span class="req">*</span></label>
+            <div class="input-icon"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg><input class="input" type="email" id="email" name="email" required maxlength="120" autocomplete="email" placeholder="you@example.com"></div>
+          </div>
+          <div class="form-row">
+            <div class="field">
+              <label for="password">Password <span class="req">*</span></label>
+              <div class="input-icon"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><input class="input" type="password" id="password" name="password" required minlength="8" maxlength="72" data-password autocomplete="new-password" placeholder="8+ characters"><button type="button" class="btn btn-ghost btn-icon btn-sm toggle-pass" aria-label="Show password"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg></button></div>
+              <div class="pass-meter" aria-hidden="true"><span></span></div>
+              <span class="hint" id="passHint">Use 8+ characters with letters and numbers.</span>
+            </div>
+            <div class="field">
+              <label for="confirm">Confirm password <span class="req">*</span></label>
+              <div class="input-icon"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><input class="input" type="password" id="confirm" name="confirm" required data-match="#password" data-label="Password confirmation" autocomplete="new-password" placeholder="Repeat password"></div>
+            </div>
+          </div>
+          <div class="field">
+            <label for="city">City</label>
+            <select class="select" id="city" name="city"><option value="">Prefer not to say</option><option>Aktobe</option><option>Almaty</option><option>Astana</option><option>Shymkent</option><option>Karaganda</option><option>Atyrau</option></select>
+          </div>
+          <div class="field">
+            <label class="check"><input type="checkbox" name="terms" required data-label="Agreement"> I agree to post honest reviews and follow the community rules.</label>
+            <div class="error"></div>
+          </div>
+          <button class="btn btn-primary btn-lg btn-block" type="submit">Create account</button>
+        </form>
+        <p class="switch-link">Already have an account? <a href="/login">Log in</a></p>
+      </div>
+    </div>
+  </main>
+
+
+  <script src="/js/vendor/jquery-3.7.1.min.js"></script>
+  <script src="/js/core.js"></script>
+  <script src="/js/auth.js"></script>
+</body>
+</html>

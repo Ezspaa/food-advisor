@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>My profile — Food Advisor</title>
+  <meta name="description" content="Manage your Food Advisor profile, reviews, favourites and security settings.">
+  <link rel="icon" href="/img/favicon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&amp;family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap">
+  <link rel="stylesheet" href="/css/style.css">
+  <script src="/js/theme.js"></script>
+</head>
+<body>
+  <header id="site-header" class="site-header"></header>
+
+  <main id="main">
+    <div class="container dash">
+      <nav class="dash-nav" aria-label="Profile sections">
+        <div class="card" id="dashNav"></div>
+      </nav>
+      <div>
+        <section class="dash-section" data-section="overview">
+          <div class="card" id="profileHero"></div>
+          <div class="kpis" id="profileKpis" style="margin-top:18px"></div>
+          <div class="card">
+            <div class="card-head"><h3>Latest activity</h3></div>
+            <div class="card-body" id="latest"></div>
+          </div>
+        </section>
+
+        <section class="dash-section" data-section="edit">
+          <div class="dash-title"><div><h2>Edit profile</h2><p>This is how other diners see you next to your reviews.</p></div></div>
+          <form class="card card-pad" id="profileForm" novalidate>
+            <div class="form-row">
+              <div class="field"><label for="p-name">Full name <span class="req">*</span></label><input class="input" id="p-name" name="name" required minlength="2" maxlength="80"></div>
+              <div class="field"><label for="p-email">Email <span class="req">*</span></label><input class="input" type="email" id="p-email" name="email" required maxlength="120"></div>
+            </div>
+            <div class="form-row">
+              <div class="field"><label for="p-city">City</label><input class="input" id="p-city" name="city" maxlength="60" list="p-cities"><datalist id="p-cities"><option value="Aktobe"><option value="Almaty"><option value="Astana"><option value="Shymkent"></datalist></div>
+              <div class="field"><label for="p-avatar">Avatar image URL</label><input class="input" type="url" id="p-avatar" name="avatar_url" maxlength="500" placeholder="https://"></div>
+            </div>
+            <div class="field"><label for="p-bio">About me</label>
+              <textarea class="textarea" id="p-bio" name="bio" maxlength="300" data-counter placeholder="Tell others what kind of food you love…"></textarea><div class="char-count">0 / 300</div></div>
+            <div style="display:flex;justify-content:flex-end;gap:10px"><button type="reset" class="btn btn-ghost">Discard changes</button><button type="submit" class="btn btn-primary">Save profile</button></div>
+          </form>
+        </section>
+
+        <section class="dash-section" data-section="reviews">
+          <div class="dash-title"><div><h2>My reviews</h2><p>Edit or delete the reviews you have written.</p></div>
+            <select class="select" id="myReviewSort" style="width:auto;height:40px" aria-label="Sort my reviews"><option value="new">Newest first</option><option value="high">Highest rating</option><option value="low">Lowest rating</option></select></div>
+          <div id="myReviews"></div>
+        </section>
+
+        <section class="dash-section" data-section="favorites">
+          <div class="dash-title"><div><h2>Favourites</h2><p id="favSub">Restaurants you saved for later.</p></div><a href="/restaurants" class="btn btn-soft">Find more</a></div>
+          <div class="r-grid" id="favGrid"></div>
+        </section>
+
+        <section class="dash-section" data-section="activity">
+          <div class="dash-title"><div><h2>Browsing history</h2><p>Saved only in this browser using Web Storage — nothing is sent to the server.</p></div></div>
+          <div class="card" style="margin-bottom:18px">
+            <div class="card-head"><h3>Recently viewed restaurants</h3><button class="btn btn-ghost btn-sm" id="clearViews">Clear</button></div>
+            <div class="card-body" id="viewList"></div>
+          </div>
+          <div class="card">
+            <div class="card-head"><h3>Recent searches</h3><button class="btn btn-ghost btn-sm" id="clearSearches">Clear</button></div>
+            <div class="card-body" id="searchList"></div>
+          </div>
+        </section>
+
+        <section class="dash-section" data-section="security">
+          <div class="dash-title"><div><h2>Security</h2><p>Change your password or delete your account.</p></div></div>
+          <form class="card card-pad" id="passwordForm" novalidate style="margin-bottom:18px">
+            <h3 style="margin-bottom:16px">Change password</h3>
+            <div class="field"><label for="s-current">Current password <span class="req">*</span></label><input class="input" type="password" id="s-current" name="current_password" required maxlength="72" autocomplete="current-password"></div>
+            <div class="form-row">
+              <div class="field"><label for="s-new">New password <span class="req">*</span></label><input class="input" type="password" id="s-new" name="new_password" required minlength="8" maxlength="72" data-password autocomplete="new-password"><span class="hint">8+ characters with letters and numbers.</span></div>
+              <div class="field"><label for="s-confirm">Confirm new password <span class="req">*</span></label><input class="input" type="password" id="s-confirm" name="confirm" required data-match="#s-new" data-label="Confirmation" autocomplete="new-password"></div>
+            </div>
+            <div style="display:flex;justify-content:flex-end"><button type="submit" class="btn btn-primary">Update password</button></div>
+          </form>
+          <div class="card card-pad" style="border-color:var(--red)">
+            <h3 style="color:var(--red);margin-bottom:6px">Delete account</h3>
+            <p class="muted" style="margin-bottom:16px">This permanently removes your profile, reviews, votes and favourites. Restaurants you own will no longer have an owner.</p>
+            <button type="button" class="btn btn-danger" id="deleteAccount">Delete my account</button>
+          </div>
+        </section>
+      </div>
+    </div>
+  </main>
+
+  <footer id="site-footer"></footer>
+
+  <script src="/js/vendor/jquery-3.7.1.min.js"></script>
+  <script src="/js/core.js"></script>
+  <script src="/js/forms.js"></script>
+  <script src="/js/profile.js"></script>
+</body>
+</html>

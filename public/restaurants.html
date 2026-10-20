@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Explore restaurants & dishes — Food Advisor</title>
+  <meta name="description" content="Search and filter restaurants and dishes by cuisine, city, rating, price and more.">
+  <link rel="icon" href="/img/favicon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&amp;family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap">
+  <link rel="stylesheet" href="/css/style.css">
+  <script src="/js/theme.js"></script>
+</head>
+<body>
+  <header id="site-header" class="site-header"></header>
+
+  <main id="main">
+    <div class="container">
+      <div class="page-head">
+        <nav class="breadcrumbs" aria-label="Breadcrumb"><a href="/">Home</a><span>/</span><span id="crumb">Restaurants</span></nav>
+        <h1 id="pageTitle">Explore restaurants</h1>
+        <p id="pageSub">Filter by cuisine, city, rating and price to find the perfect place.</p>
+      </div>
+
+      <div class="segmented mode-tabs" role="tablist" aria-label="Search mode">
+        <button type="button" role="tab" data-mode="restaurants">🏠 Restaurants</button>
+        <button type="button" role="tab" data-mode="dishes">🍲 Dishes</button>
+      </div>
+
+      <div class="explore">
+        <div class="filters-backdrop"></div>
+        <aside class="filters" id="filters" aria-label="Filters">
+          <form class="card" id="filterForm">
+            <div class="card-head"><h3>Filters</h3><button type="button" class="btn btn-ghost btn-xs" id="resetFilters">Reset all</button></div>
+            <div class="card-body">
+              <div class="filter-group">
+                <h4>Search</h4>
+                <div class="input-icon" data-suggest-wrap style="position:relative">
+                  <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+                  <input class="input" type="search" name="q" id="fQ" placeholder="Name, dish, address…" aria-label="Search text">
+                </div>
+              </div>
+              <div class="filter-group">
+                <h4>City</h4>
+                <select class="select" name="city" id="fCity" aria-label="City"><option value="">All cities</option></select>
+              </div>
+              <div class="filter-group">
+                <h4>Cuisine</h4>
+                <select class="select" name="cuisine" id="fCuisine" aria-label="Cuisine"><option value="">All cuisines</option></select>
+              </div>
+              <div class="filter-group" data-for="dishes">
+                <h4>Course</h4>
+                <select class="select" name="category" id="fCategory" aria-label="Course">
+                  <option value="">Any course</option><option>Starters</option><option>Mains</option><option>Sides</option><option>Desserts</option><option>Drinks</option>
+                </select>
+              </div>
+              <div class="filter-group">
+                <h4 id="ratingLabel">Rating</h4>
+                <div class="rating-options" role="radiogroup" aria-labelledby="ratingLabel">
+                  <label><input type="radio" name="minRating" value="" checked> Any rating</label>
+                  <label><input type="radio" name="minRating" value="4.5"> ★ 4.5 &amp; up</label>
+                  <label><input type="radio" name="minRating" value="4"> ★ 4.0 &amp; up</label>
+                  <label><input type="radio" name="minRating" value="3"> ★ 3.0 &amp; up</label>
+                </div>
+              </div>
+              <div class="filter-group" data-for="restaurants">
+                <h4>Price</h4>
+                <div class="price-toggle" id="fPrice" role="group" aria-label="Price level">
+                  <button type="button" data-price="1" aria-pressed="false" title="Budget">₸</button>
+                  <button type="button" data-price="2" aria-pressed="false" title="Moderate">₸₸</button>
+                  <button type="button" data-price="3" aria-pressed="false" title="Upscale">₸₸₸</button>
+                  <button type="button" data-price="4" aria-pressed="false" title="Fine dining">₸₸₸₸</button>
+                </div>
+              </div>
+              <div class="filter-group" data-for="dishes">
+                <h4>Max price</h4>
+                <div class="range-row">
+                  <input type="range" name="maxPrice" id="fMaxPrice" min="500" max="15000" step="500" value="15000" aria-label="Maximum dish price">
+                  <output id="maxPriceOut">Any</output>
+                </div>
+              </div>
+              <div class="filter-group">
+                <h4>More</h4>
+                <div class="filter-options">
+                  <label class="switch" data-for="restaurants"><input type="checkbox" name="openNow" id="fOpen"><span class="track"></span>Open now</label>
+                  <label class="switch" data-for="dishes"><input type="checkbox" name="vegetarian" id="fVeg"><span class="track"></span>🌿 Vegetarian</label>
+                  <label class="switch" data-for="dishes"><input type="checkbox" name="spicy" id="fSpicy"><span class="track"></span>🌶️ Spicy</label>
+                </div>
+              </div>
+              <button type="button" class="btn btn-primary btn-block filters-toggle" id="applyMobile" style="margin-top:12px">Show results</button>
+            </div>
+          </form>
+        </aside>
+
+        <section aria-label="Results">
+          <div class="toolbar">
+            <div class="left">
+              <button type="button" class="btn btn-sm filters-toggle" id="openFilters">Filters</button>
+              <span class="result-count" id="resultCount" aria-live="polite">Loading…</span>
+            </div>
+            <div class="right">
+              <label class="sr-only" for="sort">Sort by</label>
+              <select class="select" id="sort"></select>
+              <div class="segmented" id="viewToggle" data-for="restaurants" aria-label="Layout">
+                <button type="button" data-view="grid" aria-label="Grid view"></button>
+                <button type="button" data-view="list" aria-label="List view"></button>
+              </div>
+            </div>
+          </div>
+          <div class="active-filters" id="activeFilters"></div>
+          <div id="results"></div>
+          <nav class="pagination" id="pagination" aria-label="Pages"></nav>
+        </section>
+      </div>
+    </div>
+  </main>
+
+  <footer id="site-footer"></footer>
+
+  <script src="/js/vendor/jquery-3.7.1.min.js"></script>
+  <script src="/js/core.js"></script>
+  <script src="/js/explore.js"></script>
+</body>
+</html>
