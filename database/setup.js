@@ -11,7 +11,7 @@ const config = require('../config');
 const { hashPassword } = require('../server/utils/password');
 const NUTRITION = require('./nutrition');
 
-const DEMO_PASSWORD = 'Password123';
+const DEMO_PASSWORD = config.demoPassword;
 const img = (id, w = 900) => `https://images.unsplash.com/photo-${id}?auto=format&fit=crop&w=${w}&q=70`;
 
 // Deterministic pseudo-random generator so every teammate gets the same data.
@@ -260,7 +260,12 @@ async function setupDatabase() {
   console.log(`\n▶ Connecting to MySQL at ${server.host}:${server.port} as "${server.user}"…`);
   const conn = await mysql.createConnection({ ...server, multipleStatements: true, charset: 'utf8mb4' });
 
-  await conn.query(`CREATE DATABASE IF NOT EXISTS \`${database}\` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci`);
+  try {
+    await conn.query(`CREATE DATABASE IF NOT EXISTS \`${database}\` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci`);
+  } catch (err) {
+    // managed cloud databases often forbid CREATE DATABASE — the database already exists there
+    if (err.code !== 'ER_DBACCESS_DENIED_ERROR' && err.code !== 'ER_ACCESS_DENIED_ERROR') throw err;
+  }
   await conn.query(`USE \`${database}\``);
   console.log(`▶ Creating tables in "${database}"…`);
   await conn.query(fs.readFileSync(path.join(__dirname, 'schema.sql'), 'utf8'));

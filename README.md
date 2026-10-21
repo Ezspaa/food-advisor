@@ -45,6 +45,18 @@ Anyone can open the link on a phone or laptop while the window stays open. The s
 Testers leave their opinion with the **💬 Feedback** button, and you read it in **Admin panel → Feedback**.
 The one-click demo-login buttons are hidden on the public link.
 
+### Put it online permanently (optional, for user testing)
+
+The coursework itself is marked on the **local** version. To give testers a link that keeps working when your laptop is off, deploy to a host that runs Node.js **and** MySQL, for example [Railway](https://railway.com):
+
+1. Railway → **New project → Deploy from GitHub repo** → choose `food-advisor`.
+2. In the same project: **+ New → Database → MySQL**.
+3. Open the app service → **Variables** and add:
+   `MYSQL_URL = ${{MySQL.MYSQL_URL}}`, `TRUST_PROXY = 1`, `DEMO_PASSWORD = <your own strong password>`.
+4. **Settings → Networking → Generate domain**. On the first start the app creates the tables and sample data by itself.
+
+`config.js` also accepts `DATABASE_URL`, `DB_SSL=true` (managed MySQL with TLS) and the classic `DB_HOST/DB_USER/...` variables.
+
 ### Demo accounts (password for all: `Password123`)
 
 | Role | Email |
