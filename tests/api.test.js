@@ -276,6 +276,25 @@ describe('Dish nutrition facts', () => {
   });
 });
 
+describe('Compare, roulette and recommendations', () => {
+  test('compare returns up to 3 approved restaurants in the chosen order with menu stats', async () => {
+    const r = await api('GET', '/restaurants/compare?ids=3,1,6,2');
+    assert.equal(r.status, 200);
+    assert.deepEqual(r.data.items.map((x) => x.id), [3, 1, 6]);
+    r.data.items.forEach((x) => { assert.ok(x.menu.dish_count > 0); assert.ok('5' in x.ratings); });
+  });
+  test('roulette: random dishes respect budget and course', async () => {
+    const r = await api('GET', '/dishes?sort=random&maxPrice=3000&category=Mains&limit=10');
+    assert.ok(r.data.items.length > 0);
+    r.data.items.forEach((d) => { assert.ok(d.price <= 3000); assert.equal(d.category, 'Mains'); });
+  });
+  test('recommendations: several cuisines at once, excluding seen restaurants', async () => {
+    const r = await api('GET', '/restaurants?cuisines=1,3&exclude=3');
+    assert.ok(r.data.items.length > 0);
+    r.data.items.forEach((x) => { assert.ok([1, 3].includes(x.cuisine_id)); assert.notEqual(x.id, 3); });
+  });
+});
+
 describe('Site feedback', () => {
   test('anyone can send feedback; invalid input is rejected', async () => {
     assert.equal((await api('POST', '/feedback', { body: { rating: 0, category: 'x', message: '' } })).status, 422);

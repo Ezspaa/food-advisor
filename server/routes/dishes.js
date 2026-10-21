@@ -15,6 +15,7 @@ const SORTS = {
   name: 'd.name ASC',
   rating: 'avg_rating DESC, d.name',
   calories_asc: 'd.calories IS NULL, d.calories ASC, d.name',
+  random: 'RAND()', // "What should I eat?" roulette
   protein_desc: 'd.protein_g IS NULL, d.protein_g DESC, d.name',
 };
 
@@ -47,6 +48,7 @@ router.get('/', async (req, res) => {
   if (maxPrice > 0) { where.push('d.price <= ?'); params.push(maxPrice); }
   const minRating = Number(q.minRating);
   if (minRating > 0 && minRating <= 5) { where.push('COALESCE(st.avg_rating, 0) >= ?'); params.push(minRating); }
+  if (q.withPhoto === '1') where.push('d.image_url IS NOT NULL');
   const maxCalories = Number(q.maxCalories);
   if (maxCalories > 0) { where.push('d.calories <= ?'); params.push(maxCalories); }
   if (AUDIENCES.includes(q.for)) { where.push('FIND_IN_SET(?, d.recommended_for) > 0'); params.push(q.for); }

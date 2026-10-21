@@ -39,6 +39,17 @@ router.get('/', async (req, res) => {
                  OR EXISTS (SELECT 1 FROM dishes d WHERE d.restaurant_id = r.id AND d.name LIKE ?))`);
     params.push(term, term, term, term, term, term);
   }
+  // several cuisines at once (personal "Picked for you" recommendations)
+  const cuisineList = String(q.cuisines || '').split(',').map(Number).filter((n) => Number.isInteger(n) && n > 0).slice(0, 10);
+  if (cuisineList.length) {
+    where.push(`r.cuisine_id IN (${cuisineList.map(() => '?').join(',')})`);
+    params.push(...cuisineList);
+  }
+  const exclude = String(q.exclude || '').split(',').map(Number).filter((n) => Number.isInteger(n) && n > 0).slice(0, 50);
+  if (exclude.length) {
+    where.push(`r.id NOT IN (${exclude.map(() => '?').join(',')})`);
+    params.push(...exclude);
+  }
   if (q.cuisine) {
     where.push('r.cuisine_id = ?');
     params.push(id(q.cuisine, 'cuisine'));
@@ -79,6 +90,40 @@ router.get('/', async (req, res) => {
     params
   );
   res.json({ items, total, page, pages: Math.ceil(total / limit) });
+});
+
+/**
+ * GET /api/restaurants/compare?ids=1,2,3 — side-by-side comparison (max 3)
+ * Combines restaurant info with menu statistics and the rating breakdown.
+ */
+router.get('/compare', async (req, res) => {
+  const ids = String(req.query.ids || '').split(',').map(Number).filter((n) => Number.isInteger(n) && n > 0).slice(0, 3);
+  if (!ids.length) return res.json({ items: [] });
+  const marks = ids.map(() => '?').join(',');
+  const [items, menus, ratings] = await Promise.all([
+    query(
+      `SELECT ${RESTAURANT_COLUMNS},
+              (SELECT COUNT(*) FROM favorites f WHERE f.restaurant_id = r.id) AS favorite_count
+         ${RESTAURANT_FROM} WHERE r.status = 'approved' AND r.id IN (${marks})`,
+      ids
+    ),
+    query(
+      `SELECT restaurant_id, COUNT(*) AS dish_count, ROUND(AVG(price)) AS avg_price, MIN(price) AS min_price, MAX(price) AS max_price,
+              SUM(is_vegetarian) AS veg_count, SUM(is_spicy) AS spicy_count, ROUND(AVG(calories)) AS avg_calories,
+              SUM(FIND_IN_SET('kids', recommended_for) > 0) AS kids_count, SUM(FIND_IN_SET('halal', recommended_for) > 0) AS halal_count
+         FROM dishes WHERE restaurant_id IN (${marks}) AND is_available = 1 GROUP BY restaurant_id`,
+      ids
+    ),
+    query(
+      `SELECT restaurant_id, rating, COUNT(*) AS count FROM reviews
+        WHERE status = 'visible' AND restaurant_id IN (${marks}) GROUP BY restaurant_id, rating`,
+      ids
+    ),
+  ]);
+  const byId = Object.fromEntries(items.map((r) => [r.id, { ...r, menu: {}, ratings: { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 } }]));
+  menus.forEach((m) => { if (byId[m.restaurant_id]) byId[m.restaurant_id].menu = m; });
+  ratings.forEach((x) => { if (byId[x.restaurant_id]) byId[x.restaurant_id].ratings[x.rating] = x.count; });
+  res.json({ items: ids.map((i) => byId[i]).filter(Boolean) }); // keep the order the user chose
 });
 
 /** GET /api/restaurants/suggest?q= — live autocomplete for the search box */

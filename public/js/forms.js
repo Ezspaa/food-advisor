@@ -61,7 +61,7 @@
         const res = editing
           ? await FA.api('PUT', '/reviews/' + review.id, payload)
           : await FA.api('POST', `/restaurants/${restaurantId}/reviews`, payload);
-        if (!editing) FA.session.remove(draftKey);
+        if (!editing) { FA.session.remove(draftKey); FA.confetti(); }
         FA.toast(res.message);
         if (onDone) onDone();
       },

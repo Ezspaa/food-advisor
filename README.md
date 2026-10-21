@@ -57,7 +57,7 @@ The login page also has one-click demo buttons for each role.
 
 ### Automated tests
 
-With the server running, `npm test` runs 39 end-to-end API tests (Node's built-in `node:test`). They cover every functional requirement and the security rules. The tests delete everything they create when they finish.
+With the server running, `npm test` runs 42 end-to-end API tests (Node's built-in `node:test`). They cover every functional requirement and the security rules. The tests delete everything they create when they finish.
 
 ---
 
@@ -144,6 +144,11 @@ tests/api.test.js         end-to-end tests
 
 ### Extra features (beyond the proposal)
 
+- **“What should I eat today?” roulette** on the home page: choose city, budget, mood and course, then a slot-machine reel spins through matching dishes and lands on one (preferences remembered in localStorage)
+- **Compare up to 3 restaurants** side by side (rating breakdown, prices, menu size, vegetarian, kid-friendly and halal dishes, calories, opening hours) with the best value in each row highlighted; the selection lives in localStorage and a floating tray follows you across pages
+- **“Picked for you”** recommendations based on the cuisines of your favourites and recently viewed restaurants
+- **Quick search palette** (Ctrl/⌘ + K) for restaurants, dishes, cuisines and pages, with keyboard navigation
+- Delightful details: 3D tilt + spotlight on cards, circular theme switch (View Transitions API), rotating headline, confetti after publishing a review
 - **Nutrition facts for every dish**: portion weight, calories, kcal per 100 g, % of a 2000 kcal day, protein, fat and carbs (with bars), allergens, and who the dish suits (kids, sharing, high protein, light, halal, vegan, gluten-free). Shown in a dish details window, filterable (max calories, recommended for, *without* chosen allergens), and editable by owners
 - **Site feedback** button on every page (rating, topic, message), with an admin inbox
 - **Public test link** (`npm run share`) for user testing on real phones
@@ -183,7 +188,7 @@ tests/api.test.js         end-to-end tests
 |---|---|---|
 | 0:00–0:30 | Madina | Group introduction, aim of Food Advisor, the three roles |
 | 0:30–1:15 | Miras | Architecture diagram (section 3): browser ↔ JSON API ↔ MySQL, RBAC, security |
-| 1:15–2:30 | Zamira | **Guest/customer:** home search with suggestions → explore filters (city, cuisine, rating, price, open now) → dish search → restaurant page → log in as customer → write a review, edit it, vote helpful, save a favourite, show the profile and Web Storage history |
+| 1:15–2:30 | Zamira | **Guest/customer:** spin the “What should I eat?” roulette → home search with suggestions → explore filters (city, cuisine, rating, price, open now) → dish search → restaurant page → log in as customer → write a review, edit it, vote helpful, save a favourite, show the profile and Web Storage history |
 | 2:30–3:45 | Miras | **Owner:** dashboard charts → add a restaurant (pending) → edit the menu, mark a dish as sold out → reply to a review. Show that another owner's restaurant cannot be edited (403/404) |
 | 3:45–5:00 | Ilyas | **Admin:** approve the new restaurant → reports queue: hide the spam review → block the spammer → users / cuisines. Then show the MySQL tables and `npm test` (34 passing) |
 | 5:00–6:00 | Madina | Code structure overview (section 3) and the Team Member Contribution Table |

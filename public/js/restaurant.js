@@ -68,6 +68,7 @@ $(async function () {
         <div class="actions">
           ${reviewButton()}
           ${r.status === 'approved' ? `<button class="btn btn-glass ${FA.fav.has(r.id) ? 'active' : ''}" data-fav="${r.id}" aria-label="Save to favourites">${FA.icon('heart')} <span class="fav-label">${FA.fav.has(r.id) ? 'Saved' : 'Save'}</span></button>` : ''}
+          ${r.status === 'approved' ? `<button class="btn btn-glass ${FA.compare.has(r.id) ? 'active' : ''}" data-compare="${r.id}">${FA.icon('compare')} <span data-compare-label="${r.id}">${FA.compare.has(r.id) ? 'Comparing' : 'Compare'}</span></button>` : ''}
           <button class="btn btn-glass" data-share>${FA.icon('arrow')} Share</button>
           ${manage}
         </div>

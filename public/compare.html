@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Compare restaurants — Food Advisor</title>
+  <meta name="description" content="Compare up to three restaurants side by side: rating, prices, menu and nutrition.">
+  <link rel="icon" href="/img/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="/css/style.css">
+  <script src="/js/theme.js"></script>
+</head>
+<body>
+  <header id="site-header" class="site-header"></header>
+
+  <main id="main">
+    <div class="container">
+      <div class="page-head">
+        <nav class="breadcrumbs" aria-label="Breadcrumb"><a href="/">Home</a><span>/</span><span>Compare</span></nav>
+        <h1>Compare restaurants</h1>
+        <p>Side by side: ratings, prices, menu and nutrition. Your selection is kept in this browser.</p>
+      </div>
+      <div id="winner"></div>
+      <div class="card" id="compareCard" style="overflow-x:auto"></div>
+    </div>
+  </main>
+
+  <footer id="site-footer"></footer>
+
+  <script src="/js/vendor/jquery-3.7.1.min.js"></script>
+  <script src="/js/core.js"></script>
+  <script src="/js/compare.js"></script>
+</body>
+</html>

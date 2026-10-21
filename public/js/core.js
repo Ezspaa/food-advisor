@@ -156,6 +156,9 @@
     settings: '<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.6 1.6 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.6 1.6 0 0 0-1.8-.3 1.6 1.6 0 0 0-1 1.5V21a2 2 0 0 1-4 0v-.1a1.6 1.6 0 0 0-1-1.5 1.6 1.6 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.6 1.6 0 0 0 .3-1.8 1.6 1.6 0 0 0-1.5-1H3a2 2 0 0 1 0-4h.1a1.6 1.6 0 0 0 1.5-1 1.6 1.6 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.6 1.6 0 0 0 1.8.3H9a1.6 1.6 0 0 0 1-1.5V3a2 2 0 0 1 4 0v.1a1.6 1.6 0 0 0 1 1.5 1.6 1.6 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.6 1.6 0 0 0-.3 1.8V9a1.6 1.6 0 0 0 1.5 1H21a2 2 0 0 1 0 4h-.1a1.6 1.6 0 0 0-1.5 1z"/>',
     home: '<path d="M3 11 12 3l9 8M5 9.5V21h14V9.5"/>',
     calendar: '<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/>',
+    compare: '<path d="M8 4v16M16 4v16M3 8h5M16 16h5M8 12H3M21 12h-5"/>',
+    dice: '<rect x="3" y="3" width="18" height="18" rx="4"/><circle cx="8" cy="8" r="1.3" fill="currentColor"/><circle cx="16" cy="16" r="1.3" fill="currentColor"/><circle cx="12" cy="12" r="1.3" fill="currentColor"/><circle cx="16" cy="8" r="1.3" fill="currentColor"/><circle cx="8" cy="16" r="1.3" fill="currentColor"/>',
+    command: '<path d="M9 6a3 3 0 1 0-3 3h12a3 3 0 1 0-3-3v12a3 3 0 1 0 3-3H6a3 3 0 1 0 3 3z"/>',
   };
   FA.icon = (name, cls = '') => `<svg class="icon ${cls}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${P[name] || ''}</svg>`;
   FA.starIcon = (filled) => `<svg class="icon ${filled ? '' : 'star-off'}" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">${P.star}</svg>`;
@@ -211,11 +214,14 @@
       ? `<img src="${FA.esc(r.image_url)}" alt="${FA.esc(r.name)}" loading="lazy" class="fade" data-fallback="${FA.esc(r.cuisine_emoji || '🍽️')}">`
       : `<div class="img-fallback">${FA.esc(r.cuisine_emoji || '🍽️')}</div>`;
     return `
-      <article class="r-card" style="animation-delay:${Math.min(i, 12) * 40}ms">
+      <article class="r-card" data-rid="${r.id}">
         <div class="media">
           ${img}
           <div class="tags">${Number(r.is_featured) ? `<span class="badge badge-brand">${FA.icon('sparkle')}Featured</span>` : ''}${FA.openBadge(r)}</div>
-          <button class="fav-btn ${FA.fav.has(r.id) ? 'active' : ''}" data-fav="${r.id}" aria-label="Save ${FA.esc(r.name)} to favourites" aria-pressed="${FA.fav.has(r.id)}">${FA.icon('heart')}</button>
+          <div class="card-actions">
+            <button class="fav-btn cmp-btn ${FA.compare.has(r.id) ? 'active' : ''}" data-compare="${r.id}" aria-label="Compare ${FA.esc(r.name)}" aria-pressed="${FA.compare.has(r.id)}" title="Compare">${FA.icon('compare')}</button>
+            <button class="fav-btn ${FA.fav.has(r.id) ? 'active' : ''}" data-fav="${r.id}" aria-label="Save ${FA.esc(r.name)} to favourites" aria-pressed="${FA.fav.has(r.id)}">${FA.icon('heart')}</button>
+          </div>
         </div>
         <div class="body">
           <div class="meta"><span>${FA.esc(r.cuisine_emoji || '')} ${FA.esc(r.cuisine)}</span><span class="sep">•</span><span>${FA.icon('pin')} ${FA.esc(r.city)}</span></div>
@@ -575,7 +581,7 @@
     views: () => FA.store.get('recentViews', []),
     addView(r) {
       const list = this.views().filter((x) => x.id !== r.id);
-      list.unshift({ id: r.id, name: r.name, image_url: r.image_url, cuisine: r.cuisine, cuisine_emoji: r.cuisine_emoji, city: r.city, at: Date.now() });
+      list.unshift({ id: r.id, name: r.name, image_url: r.image_url, cuisine: r.cuisine, cuisine_id: r.cuisine_id, cuisine_emoji: r.cuisine_emoji, city: r.city, at: Date.now() });
       FA.store.set('recentViews', list.slice(0, 8));
     },
     clearViews() { FA.store.remove('recentViews'); },
@@ -593,14 +599,26 @@
   /* ---------------- Theme (stored in localStorage) ---------------- */
   FA.theme = {
     current: () => document.documentElement.getAttribute('data-theme') || 'light',
-    toggle() {
+    toggle(e) {
       const next = FA.theme.current() === 'dark' ? 'light' : 'dark';
-      document.documentElement.setAttribute('data-theme', next);
-      FA.store.set('theme', next);
-      $('[data-theme-toggle]').html(FA.icon(next === 'dark' ? 'sun' : 'moon'));
+      const apply = () => {
+        document.documentElement.setAttribute('data-theme', next);
+        FA.store.set('theme', next);
+        $('[data-theme-toggle]').html(FA.icon(next === 'dark' ? 'sun' : 'moon'));
+      };
+      const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      if (!document.startViewTransition || reduce) return apply();
+      // circular "ink" reveal starting from the toggle button
+      const x = e && e.clientX ? e.clientX : window.innerWidth - 60;
+      const y = e && e.clientY ? e.clientY : 30;
+      const r = Math.hypot(Math.max(x, window.innerWidth - x), Math.max(y, window.innerHeight - y));
+      document.documentElement.style.setProperty('--vt-x', x + 'px');
+      document.documentElement.style.setProperty('--vt-y', y + 'px');
+      document.documentElement.style.setProperty('--vt-r', r + 'px');
+      document.startViewTransition(apply);
     },
   };
-  $(document).on('click', '[data-theme-toggle]', () => FA.theme.toggle());
+  $(document).on('click', '[data-theme-toggle]', (e) => FA.theme.toggle(e));
 
   /* ---------------- Header & footer ---------------- */
   const LOGO = `<a href="/" class="logo" aria-label="Food Advisor home"><span class="logo-mark">${FA.icon('utensils')}</span><span>Food<b>Advisor</b></span></a>`;
@@ -657,6 +675,7 @@
         ${LOGO}
         <nav class="main-nav" aria-label="Main">${nav}</nav>
         <div class="header-actions">
+          <button class="btn btn-ghost kbd-btn hide-mobile" data-palette aria-label="Quick search (Ctrl+K)">${FA.icon('search')}<span>Search</span><kbd>${/Mac|iPhone|iPad/.test(navigator.platform) ? '⌘' : 'Ctrl'} K</kbd></button>
           <button class="btn btn-ghost btn-icon" data-theme-toggle aria-label="Toggle dark mode">${themeIco}</button>
           ${actions}
           <button class="btn btn-ghost btn-icon nav-toggle" aria-label="Open menu" aria-expanded="false">${FA.icon('menu')}</button>
@@ -673,7 +692,9 @@
           <li><a href="/restaurants">All restaurants</a></li>
           <li><a href="/restaurants?mode=dishes">Search dishes</a></li>
           <li><a href="/restaurants?openNow=1">Open now</a></li>
-          <li><a href="/restaurants?sort=rating&minRating=4.5">Top rated</a></li></ul></div>
+          <li><a href="/restaurants?sort=rating&minRating=4.5">Top rated</a></li>
+          <li><a href="/compare">Compare restaurants</a></li>
+          <li><a href="/#roulette">What should I eat?</a></li></ul></div>
         <div><h5>Cities</h5><ul>
           <li><a href="/restaurants?city=Aktobe">Aktobe</a></li>
           <li><a href="/restaurants?city=Almaty">Almaty</a></li>
@@ -903,6 +924,160 @@
   FA.openFeedback = openFeedback;
   $(document).on('click', '[data-feedback]', openFeedback);
 
+  /* ---------------- Compare restaurants (localStorage, max 3) ---------------- */
+  FA.compare = {
+    ids: () => FA.store.get('compare', []),
+    has(id) { return this.ids().includes(Number(id)); },
+    toggle(id) {
+      id = Number(id);
+      let list = this.ids();
+      if (list.includes(id)) list = list.filter((x) => x !== id);
+      else {
+        if (list.length >= 3) { FA.toast('You can compare up to 3 restaurants', 'info'); return; }
+        list.push(id);
+      }
+      FA.store.set('compare', list);
+      this.paint();
+      return list.includes(id);
+    },
+    clear() { FA.store.set('compare', []); this.paint(); },
+    async paint() {
+      const list = this.ids();
+      $('[data-compare]').each((_, el) => {
+        const on = list.includes(Number($(el).data('compare')));
+        $(el).toggleClass('active', on).attr('aria-pressed', on);
+      });
+      $('[data-compare-label]').each((_, el) => $(el).text(list.includes(Number($(el).data('compare-label'))) ? 'Comparing' : 'Compare'));
+      let $tray = $('.compare-tray');
+      if (!list.length || location.pathname.startsWith('/compare')) { $tray.removeClass('show'); return; }
+      if (!$tray.length) $tray = $('<div class="compare-tray" role="region" aria-label="Compare restaurants"></div>').appendTo('body');
+      // fetch names/photos of the selected restaurants once
+      const missing = list.filter((id) => !FA.compare.cache[id]);
+      if (missing.length) {
+        try { (await FA.api('GET', '/restaurants', { ids: missing.join(','), limit: 3 })).items.forEach((r) => { FA.compare.cache[r.id] = r; }); } catch (e) { /* ignore */ }
+      }
+      const slots = [0, 1, 2].map((i) => {
+        const r = FA.compare.cache[list[i]];
+        return r ? `<button class="slot filled" data-compare="${r.id}" title="Remove ${FA.esc(r.name)}">${r.image_url ? `<img src="${FA.esc(r.image_url)}" alt="">` : FA.esc(r.cuisine_emoji)}<span class="x">×</span></button>` : '<span class="slot">+</span>';
+      }).join('');
+      $tray.html(`<div class="slots">${slots}</div><div class="txt"><b>${list.length} of 3</b><small>selected to compare</small></div>
+        <a href="/compare" class="btn btn-primary btn-sm" ${list.length < 2 ? 'aria-disabled="true" tabindex="-1"' : ''}>Compare</a>
+        <button class="btn btn-ghost btn-icon btn-sm" data-compare-clear aria-label="Clear comparison">${FA.icon('x')}</button>`);
+      requestAnimationFrame(() => $tray.addClass('show'));
+    },
+    cache: {},
+  };
+  $(document).on('click', '[data-compare]', function (e) {
+    e.preventDefault(); e.stopPropagation();
+    const on = FA.compare.toggle($(this).data('compare'));
+    if (on) FA.toast(FA.compare.ids().length < 2 ? 'Added — pick one more restaurant to compare' : 'Added to comparison', 'info');
+  });
+  $(document).on('click', '[data-compare-clear]', () => FA.compare.clear());
+  $(document).on('click', '.compare-tray a[aria-disabled]', (e) => { e.preventDefault(); FA.toast('Choose at least 2 restaurants', 'info'); });
+
+  /* ---------------- 3D tilt + spotlight on cards (mouse only) ---------------- */
+  if (window.matchMedia('(hover: hover) and (pointer: fine)').matches && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    $(document).on('mousemove', '.r-card, .cuisine-tile', function (e) {
+      const r = this.getBoundingClientRect();
+      const px = (e.clientX - r.left) / r.width;
+      const py = (e.clientY - r.top) / r.height;
+      this.style.setProperty('--rx', ((0.5 - py) * 7).toFixed(2) + 'deg');
+      this.style.setProperty('--ry', ((px - 0.5) * 9).toFixed(2) + 'deg');
+      this.style.setProperty('--mx', (px * 100).toFixed(1) + '%');
+      this.style.setProperty('--my', (py * 100).toFixed(1) + '%');
+    });
+    $(document).on('mouseleave', '.r-card, .cuisine-tile', function () {
+      this.style.setProperty('--rx', '0deg');
+      this.style.setProperty('--ry', '0deg');
+    });
+  }
+
+  /* ---------------- Confetti (tiny canvas animation, no library) ---------------- */
+  FA.confetti = function (x = window.innerWidth / 2, y = window.innerHeight / 2.5) {
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    const canvas = document.createElement('canvas');
+    canvas.className = 'confetti';
+    canvas.width = window.innerWidth; canvas.height = window.innerHeight;
+    document.body.appendChild(canvas);
+    const ctx = canvas.getContext('2d');
+    const colors = ['#e4572e', '#f5a524', '#23865a', '#2f6fdb', '#7752d1', '#ff8fab'];
+    const parts = Array.from({ length: 140 }, () => ({
+      x, y, r: 3 + Math.random() * 4, c: colors[Math.floor(Math.random() * colors.length)],
+      vx: (Math.random() - 0.5) * 14, vy: -6 - Math.random() * 10, rot: Math.random() * 6, vr: (Math.random() - 0.5) * 0.3,
+    }));
+    let frame = 0;
+    (function draw() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      parts.forEach((p) => {
+        p.vy += 0.35; p.vx *= 0.99; p.x += p.vx; p.y += p.vy; p.rot += p.vr;
+        ctx.save(); ctx.translate(p.x, p.y); ctx.rotate(p.rot); ctx.fillStyle = p.c;
+        ctx.globalAlpha = Math.max(0, 1 - frame / 110); ctx.fillRect(-p.r, -p.r / 2, p.r * 2, p.r); ctx.restore();
+      });
+      if (++frame < 110) requestAnimationFrame(draw); else canvas.remove();
+    })();
+  };
+
+  /* ---------------- Quick search palette: Ctrl/⌘ + K ---------------- */
+  function openPalette() {
+    if ($('.palette').length) return;
+    const user = FA.auth.user();
+    const pages = [
+      ['🏠', 'Home', '/'], ['🍽️', 'All restaurants', '/restaurants'], ['🥗', 'Search dishes', '/restaurants?mode=dishes'],
+      ['🟢', 'Open now', '/restaurants?openNow=1'], ['🎲', 'What should I eat? (roulette)', '/#roulette'], ['⚖️', 'Compare restaurants', '/compare'],
+      ...(user ? [['👤', 'My profile', '/profile'], ['💛', 'My favourites', '/profile#favorites']] : [['🔑', 'Log in', '/login'], ['✨', 'Create account', '/register']]),
+      ...(user && user.role === 'owner' ? [['👨‍🍳', 'Owner dashboard', '/owner'], ['📋', 'Edit my menu', '/owner#menu']] : []),
+      ...(user && user.role === 'admin' ? [['🛡️', 'Admin panel', '/admin'], ['🚩', 'Reports queue', '/admin#reports'], ['💬', 'Site feedback', '/admin#feedback']] : []),
+    ];
+    const $p = $(`
+      <div class="palette-backdrop"><div class="palette" role="dialog" aria-label="Quick search">
+        <div class="palette-input">${FA.icon('search')}<input type="text" placeholder="Search restaurants, dishes, cuisines or pages…" aria-label="Quick search" autocomplete="off"><kbd>Esc</kbd></div>
+        <div class="palette-list" role="listbox"></div>
+        <div class="palette-foot"><span><kbd>↑</kbd><kbd>↓</kbd> navigate</span><span><kbd>Enter</kbd> open</span></div>
+      </div></div>`).appendTo('body');
+    const $in = $p.find('input');
+    const $list = $p.find('.palette-list');
+    let idx = 0;
+    const item = (ico, title, sub, href) => `<a class="p-item" href="${href}"><span class="p-ico">${ico}</span><span>${title}${sub ? `<small>${sub}</small>` : ''}</span></a>`;
+    const highlight = () => $list.find('.p-item').removeClass('hl').eq(idx).addClass('hl')[0]?.scrollIntoView({ block: 'nearest' });
+    function renderPages(q = '') {
+      const list = pages.filter((p) => p[1].toLowerCase().includes(q.toLowerCase()));
+      return list.length ? `<h6>Pages</h6>${list.map(([i, t, h]) => item(i, FA.esc(t), '', h)).join('')}` : '';
+    }
+    const search = FA.debounce(async (q) => {
+      let html = renderPages(q);
+      if (q.length >= 2) {
+        try {
+          const r = await FA.api('GET', '/restaurants/suggest', { q });
+          if ($in.val().trim() !== q) return;
+          if (r.restaurants.length) html = `<h6>Restaurants</h6>${r.restaurants.map((x) => item('🏪', FA.esc(x.name), `${FA.esc(x.cuisine)} · ${FA.esc(x.city)}`, `/restaurant?id=${x.id}`)).join('')}` + html;
+          if (r.dishes.length) html += `<h6>Dishes</h6>${r.dishes.map((x) => item('🍲', FA.esc(x.name), 'at ' + FA.esc(x.restaurant), `/restaurant?id=${x.restaurant_id}#menu`)).join('')}`;
+          if (r.cuisines.length) html += `<h6>Cuisines</h6>${r.cuisines.map((x) => item(FA.esc(x.emoji), FA.esc(x.name), '', `/restaurants?cuisine=${x.id}`)).join('')}`;
+        } catch (e) { /* offline */ }
+        html += `<h6>Search</h6>${item('🔍', `Search everything for “${FA.esc(q)}”`, '', `/restaurants?q=${encodeURIComponent(q)}`)}`;
+      }
+      $list.html(html || '<p class="muted" style="padding:14px">Nothing found</p>');
+      idx = 0; highlight();
+    }, 160);
+    const close = () => { $p.removeClass('open'); setTimeout(() => $p.remove(), 200); $(document).off('keydown.palette'); };
+    $list.html(renderPages()); highlight();
+    $in.trigger('focus');
+    requestAnimationFrame(() => $p.addClass('open'));
+    $in.on('input', () => search($in.val().trim()));
+    $p.on('click', (e) => { if (e.target === $p[0]) close(); });
+    $p.on('click', '.p-item', close);
+    $(document).on('keydown.palette', (e) => {
+      const $items = $list.find('.p-item');
+      if (e.key === 'Escape') close();
+      else if (e.key === 'ArrowDown' || e.key === 'ArrowUp') { e.preventDefault(); idx = (idx + (e.key === 'ArrowDown' ? 1 : -1) + $items.length) % $items.length; highlight(); }
+      else if (e.key === 'Enter' && $items.length) { e.preventDefault(); $items.eq(idx)[0].click(); }
+    });
+  }
+  FA.openPalette = openPalette;
+  $(document).on('click', '[data-palette]', openPalette);
+  $(document).on('keydown', (e) => {
+    if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') { e.preventDefault(); openPalette(); }
+  });
+
   /* ---------------- Boot ---------------- */
   FA.ready = (async function () {
     await new Promise((r) => $(r));
@@ -922,5 +1097,6 @@
       FA.renderHeader();
     }
     await FA.fav.load();
+    FA.compare.paint();
   })();
 })(jQuery, window, document);
