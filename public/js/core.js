@@ -334,7 +334,8 @@
     });
   };
   $(document).on('click', '[data-dish]', function (e) {
-    if ($(e.target).closest('a, button').length) return; // links inside the card keep working
+    const $inner = $(e.target).closest('a, button');
+    if ($inner.length && $inner[0] !== this) return; // links inside the card keep working
     FA.showDish($(this).data('dish'));
   });
   $(document).on('keydown', '[data-dish]', function (e) {
